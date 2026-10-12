@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+attendance.db
+.env
+*.log
+server.err
+tunnel.err
+.DS_Store

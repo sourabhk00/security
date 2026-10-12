@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Authorized Workspace Login{% endblock %}
+{% block content %}
+<section class="login-layout">
+  <!-- Left Column: Rich Industrial Operations Brand Hero -->
+  <div class="login-story">
+    <div class="story-top">
+      <span class="brand-icon large">CM</span>
+      <span>CHAUHAN MAN POWER SUPPLY</span>
+    </div>
+
+    <div class="story-copy">
+      <span class="welcome-pill">
+        <i></i> WORKFORCE OPERATIONS & SAFETY PLATFORM
+      </span>
+      <h1>Precision attendance.<br><em>Verified safety at every site.</em></h1>
+      <p>Continuous GPS geofence monitoring, device-native biometric authentication, and instant supervisor dispatch designed for modern industrial field teams.</p>
+      
+      <div class="story-points">
+        <div>
+          <span>01 · GEOFENCE</span>
+          <b>Automated Radius Check</b>
+          <small>Server-validated arrival within registered perimeter.</small>
+        </div>
+        <div>
+          <span>02 · SAFETY</span>
+          <b>Real-Time Departure Alert</b>
+          <small>Proactive boundary alerts and one-tap SOS dispatch.</small>
+        </div>
+        <div>
+          <span>03 · PRIVACY</span>
+          <b>On-Device Passkey Auth</b>
+          <small>Platform biometric security keeping worker data private.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="workforce-illustration" aria-hidden="true">
+      <div class="illustration-glow"></div>
+      <svg viewBox="0 0 560 300" role="presentation" focusable="false">
+        <defs>
+          <linearGradient id="siteSky" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#123b31"/><stop offset="1" stop-color="#071410"/></linearGradient>
+          <linearGradient id="vest" x1="0" x2="1"><stop stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+        </defs>
+        <rect x="18" y="35" width="524" height="230" rx="22" fill="url(#siteSky)" stroke="#2a6652" stroke-opacity=".65"/>
+        <path d="M18 205h524v38a22 22 0 0 1-22 22H40a22 22 0 0 1-22-22z" fill="#0a2019"/>
+        <path d="M55 198V111l62-42 62 42v87M179 198V92h112v106M291 198v-73l48-35 48 35v73M387 198V79h101v119" fill="#0d2920" stroke="#3a735d" stroke-width="3"/>
+        <path d="M77 125h22v25H77zm42 0h22v25h-22zm77-13h23v22h-23zm43 0h23v22h-23zm112 25h20v23h-20zm65-37h20v24h-20zm39 0h20v24h-20z" fill="#34d399" opacity=".62"/>
+        <path d="M41 199h478" stroke="#34d399" stroke-opacity=".45" stroke-width="2" stroke-dasharray="7 8"/>
+        <g transform="translate(122 105)"><circle cx="38" cy="27" r="19" fill="#c68a62"/><path d="M17 26q2-23 22-22 19 2 20 23l-8-7-27 2z" fill="#fbbf24"/><path d="M14 53q24-18 49 0l14 73H0z" fill="url(#vest)" stroke="#ffe3a3" stroke-width="3"/><path d="M38 55v69M13 79h51" stroke="#fff7d1" stroke-width="5" opacity=".88"/><path d="M17 125l-6 42m47-42 8 42" stroke="#173b30" stroke-width="12" stroke-linecap="round"/><path d="M9 168h-6m69 0h-7" stroke="#dbeafe" stroke-width="8" stroke-linecap="round"/></g>
+        <g transform="translate(240 126) scale(.82)"><circle cx="38" cy="27" r="19" fill="#9b6245"/><path d="M17 25q4-22 23-21 17 2 19 22l-8-7-28 2z" fill="#fbbf24"/><path d="M14 53q24-18 49 0l14 73H0z" fill="url(#vest)" stroke="#ffe3a3" stroke-width="3"/><path d="M38 55v69M13 79h51" stroke="#fff7d1" stroke-width="5" opacity=".88"/><path d="M17 125l-6 42m47-42 8 42" stroke="#173b30" stroke-width="12" stroke-linecap="round"/><path d="M9 168h-6m69 0h-7" stroke="#dbeafe" stroke-width="8" stroke-linecap="round"/></g>
+        <g transform="translate(377 62)"><rect width="126" height="54" rx="14" fill="#102c23" stroke="#3a735d"/><circle cx="22" cy="27" r="6" fill="#34d399"/><path d="M37 21h69M37 32h48" stroke="#d1fae5" stroke-width="4" stroke-linecap="round" opacity=".78"/><text x="17" y="47" fill="#9fb9ad" font-size="8" font-family="Arial,sans-serif" letter-spacing="1.4">SITE VERIFIED</text></g>
+      </svg>
+      <span class="illustration-caption"><i></i> People first. Safety always.</span>
+    </div>
+
+    <div style="position: relative; z-index: 2; display: flex; gap: 24px; font-size: 11.5px; color: var(--slate-400);">
+      <span>✓ 4 Active Client Facilities</span>
+      <span>✓ 256-Bit TLS Security</span>
+      <span>✓ Real-time Geofence Sync</span>
+    </div>
+
+    <div class="story-sun"></div>
+    <div class="story-lines"></div>
+  </div>
+
+  <!-- Right Column: Clean Executive Authentication Card -->
+  <div class="login-panel">
+    <div class="login-card">
+      <div class="login-card-head">
+        <div class="eyebrow">
+          <span>PORTAL AUTHENTICATION</span>
+          <span class="eyebrow-dot">•</span>
+          <span>SECURE ACCESS</span>
+        </div>
+        <h2>Sign in to workspace</h2>
+        <p>Enter your assigned credentials to access your operations dashboard.</p>
+      </div>
+
+      <!-- Quick-Fill Demo Presets -->
+      <div class="demo-preset-group">
+        <div class="demo-preset-header">
+          <div class="eyebrow" style="font-size: 9.5px;">1-CLICK DEMO ACCESS</div>
+          <small>Instant Fill</small>
+        </div>
+        <div class="demo-button-row">
+          <button type="button" class="demo-pill-btn" data-demo-user="manager" data-demo-pass="manager123" title="Fill Manager credentials">
+            <b>👔 Operations Manager</b>
+            <span>manager / manager123</span>
+          </button>
+          <button type="button" class="demo-pill-btn" data-demo-user="worker" data-demo-pass="worker123" title="Fill Worker credentials">
+            <b>👷 Field Personnel</b>
+            <span>worker / worker123</span>
+          </button>
+        </div>
+      </div>
+
+      <form method="post" class="form-stack" style="margin-top: 20px;" id="login-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>
+          Your Username
+          <div style="position: relative;">
+            <input name="username" id="username-field" autocomplete="username" placeholder="Enter your username" required autofocus>
+          </div>
+        </label>
+        
+        <label>
+          Account Password
+          <div style="position: relative;">
+            <input name="password" id="password-field" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+            <button type="button" id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--slate-400); cursor: pointer; padding: 4px; font-size: 11px; font-weight: 700;">Show</button>
+          </div>
+        </label>
+        
+        <button class="btn primary full" type="submit" id="submit-login">
+          <span>Sign In to Console</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+
+      <div class="login-security-badge">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>Location permission is required at site entrance for verified geofence check-in.</span>
+      </div>
+
+      <!-- Cloudflare Public Remote Mobile Link & QR Trigger -->
+      <div style="margin-top: 16px; padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div>
+          <span style="font-size: 10px; font-weight: 800; color: #34d399; letter-spacing: 0.5px; display: block;">🌐 PUBLIC HTTPS MOBILE ACCESS</span>
+          <a href="https://sticks-unless-dog-treatment.trycloudflare.com" target="_blank" rel="noopener" style="font-size: 11px; color: #fff; font-family: var(--font-mono); text-decoration: underline;">sticks-unless-dog-treatment.trycloudflare.com</a>
+        </div>
+        <button type="button" class="btn secondary btn-sm" id="btn-show-login-qr" style="font-size: 11px; padding: 4px 10px; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25);">
+          📱 QR Code
+        </button>
+      </div>
+
+      <p class="login-note">Need account assistance? Please contact your industrial site supervisor.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile Access QR Code Modal for Login Screen -->
+<dialog class="qr-share-dialog" id="qr-share-modal" aria-labelledby="qr-modal-title">
+  <div class="qr-dialog-inner">
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow" style="color: var(--emerald-600);">MOBILE REMOTE ACCESS</div>
+        <h2 id="qr-modal-title" style="margin: 2px 0;">Scan to Open on Phone</h2>
+      </div>
+      <button type="button" class="modal-close-btn" id="qr-modal-close">✕</button>
+    </div>
+    
+    <p class="muted" style="font-size: 13px; margin-bottom: 16px;">Scan with your phone camera to test live facial biometric verification and GPS check-in on iOS or Android.</p>
+    
+    <div class="qr-display-card" style="display: flex; flex-direction: column; align-items: center; gap: 14px; background: var(--slate-50); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fsticks-unless-dog-treatment.trycloudflare.com" alt="Mobile Access QR Code" style="width: 200px; height: 200px; border-radius: 8px; border: 1px solid var(--border-light); background: #fff; padding: 8px;">
+      <div class="qr-url-copy" style="display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center;">
+        <code style="font-size: 11px; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-subtle); color: var(--emerald-700); font-weight: 700;">https://sticks-unless-dog-treatment.trycloudflare.com</code>
+        <button type="button" class="btn secondary btn-sm" id="btn-copy-tunnel-url">Copy 📋</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; font-size: 12px; color: var(--slate-500); text-align: center;">
+      🔒 Secured by Cloudflare SSL Tunnel · Direct Mobile Browser Access
+    </div>
+  </div>
+</dialog>
+{% endblock %}

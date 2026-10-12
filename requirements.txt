@@ -1,0 +1,5 @@
+Flask>=3.0,<4.0
+Flask-WTF>=1.2,<2.0
+webauthn>=2.2,<3.0
+Pillow>=10,<13
+opencv-contrib-python-headless>=4.10,<5

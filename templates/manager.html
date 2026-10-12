@@ -1,0 +1,1231 @@
+{% extends 'base.html' %}
+{% block title %}Operations Command Center{% endblock %}
+{% block heading %}Workforce Operations Console{% endblock %}
+{% block content %}
+<div class="operations-dashboard">
+  <!-- Executive Welcome Hero Banner -->
+  <section class="welcome-row manager-welcome">
+    <div>
+      <div class="eyebrow">
+        <span>EXECUTIVE WORKFORCE SUPERVISION</span>
+        <span class="eyebrow-dot">•</span>
+        <span>REAL-TIME TELEMETRY</span>
+      </div>
+      <h1>Workforce Operations Center</h1>
+      <p class="muted">Live monitoring of shift check-ins, client site perimeter integrity, and workforce compliance across active industrial operations.</p>
+    </div>
+    
+    <div class="manager-welcome-actions">
+      <div class="date-chip">
+        <span class="today-label">TODAY'S OPERATIONS</span>
+        <span id="today"></span>
+      </div>
+      <a class="btn secondary" href="#today-roster">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+        <span>Live Roster</span>
+      </a>
+      <a class="btn primary" href="#attendance-reports">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>View Analytics</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Public Cloudflare Remote Access Hub & Mobile Quick-Connect Banner -->
+  <section class="public-access-banner" style="background: linear-gradient(135deg, #09131a 0%, #0d2226 100%); border-radius: var(--radius-lg); padding: 16px 22px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 24px; border: 1px solid rgba(16, 185, 129, 0.25); box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: grid; place-items: center; font-size: 22px; flex-shrink: 0;">
+        🌐
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <b style="font-size: 14px; letter-spacing: 0.3px;">Cloudflare Remote Access Hub (Encrypted Public Tunnel)</b>
+          <span class="status-pill green" style="font-size: 10px; padding: 2px 8px;">LIVE HTTPS ONLINE</span>
+        </div>
+        <p style="margin: 3px 0 0; font-size: 12.5px; color: #94a3b8;">
+          Share with employees for remote mobile camera biometrics & GPS check-in on any smartphone:
+          <a href="https://sticks-unless-dog-treatment.trycloudflare.com" target="_blank" rel="noopener" style="color: #34d399; font-family: var(--font-mono); font-weight: 700; text-decoration: underline; margin-left: 4px;">https://sticks-unless-dog-treatment.trycloudflare.com</a>
+        </p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+      <button type="button" class="btn secondary" id="btn-show-qr-modal" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); color: #fff; min-height: 40px; font-size: 12px; padding: 0 16px;">
+        📱 Scan Mobile QR Code
+      </button>
+      <button type="button" class="btn secondary" id="btn-copy-public-link" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); color: #fff; min-height: 40px; font-size: 12px; padding: 0 16px;">
+        📋 Copy Link
+      </button>
+    </div>
+  </section>
+
+  <!-- Executive KPI Metrics Grid -->
+  <section class="metric-grid">
+    <article class="metric-card">
+      <div class="metric-label">
+        <span>ACTIVE ON SHIFT</span>
+        <span style="color: var(--emerald-600);">●</span>
+      </div>
+      <div class="metric-value">{{ rows|length }}<small>workers</small></div>
+      <div class="metric-foot"><i class="live-dot"></i> Verified on-site attendance</div>
+    </article>
+    
+    <article class="metric-card alert-metric">
+      <div class="metric-label">
+        <span>OPEN SAFETY ALERTS</span>
+        <span style="color: var(--rose-600);">!</span>
+      </div>
+      <div class="metric-value"><span id="alert-count">{{ alerts|length }}</span><small>events</small></div>
+      <div class="metric-foot">Boundary departures & SOS calls</div>
+    </article>
+    
+    <article class="metric-card">
+      <div class="metric-label">
+        <span>REGISTERED EMPLOYEES</span>
+        <span style="color: var(--indigo-600);">👥</span>
+      </div>
+      <div class="metric-value">{{ workers|length }}<small>personnel</small></div>
+      <div class="metric-foot">Enrolled across {{ sites|length }} facilities</div>
+    </article>
+  </section>
+
+  <!-- Quick Jump Anchors Toolbar -->
+  <nav class="quick-jump-bar" aria-label="Section Quick Jump">
+    <a href="#today-roster" class="jump-pill">👥 Live Shift Roster</a>
+    <a href="#alerts-list" class="jump-pill">🚨 Alert Queue</a>
+    <a href="#client-sites" class="jump-pill">📍 Client Facilities</a>
+    <a href="#team-tools" class="jump-pill">➕ Employee Registration</a>
+    <a href="#manager-operations" class="jump-pill">📅 Schedules & Leaves</a>
+    <a href="#attendance-reports" class="jump-pill">📊 Analytics & CSV</a>
+    <a href="#employee-directory" class="jump-pill">👤 Employee Directory</a>
+    <a href="#audit-history" class="jump-pill">📜 System Audit Log</a>
+  </nav>
+
+  <!-- Section 1: Live Roster & Alert Queue -->
+  <section class="dashboard-grid" id="today-roster">
+    <!-- Live Shift Roster Card -->
+    <article class="card roster-card">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">ACTIVE DEPLOYMENT</div>
+          <h2>Current Shift Roster</h2>
+        </div>
+        <span class="status-pill green"><i></i> LIVE SYNC</span>
+      </div>
+      
+      <form method="get" class="roster-filters">
+        <label>
+          Search Personnel
+          <input name="q" value="{{ search }}" placeholder="Filter by name or employee ID…">
+        </label>
+        
+        <label>
+          Workplace Facility
+          <select name="site">
+            <option value="">All Facilities</option>
+            {% for site in sites %}
+            <option value="{{ site.id }}" {% if site_filter|string == site.id|string %}selected{% endif %}>{{ site.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        
+        <label>
+          Shift Status
+          <select name="state">
+            <option value="">All Shifts</option>
+            <option value="on_site" {% if state_filter=='on_site' %}selected{% endif %}>Inside Boundary</option>
+            <option value="outside" {% if state_filter=='outside' %}selected{% endif %}>Departure / Alert</option>
+          </select>
+        </label>
+        
+        <button class="btn secondary" style="justify-content: center;">Filter</button>
+      </form>
+      
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>PERSONNEL</th>
+              <th>FACILITY</th>
+              <th>CHECK IN / SCHEDULE</th>
+              <th>SHIFT DURATION</th>
+              <th>LOCATION PING</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr>
+              <td>
+                <div class="person-cell">
+                  <span class="avatar small">{{ row.name[:1] }}</span>
+                  <div>
+                    <b>{{ row.name }}</b>
+                    <small>{{ row.employee_id or 'ID Pending' }}{% if row.post %} · {{ row.post }}{% endif %}</small>
+                  </div>
+                </div>
+              </td>
+              <td><b>{{ row.site_name }}</b></td>
+              <td>
+                {{ row.check_in|clock }}
+                {% if row.scheduled_start %}
+                <small class="table-sub">
+                  Starts {{ row.scheduled_start }}
+                  {% if row.is_late %} · <span style="color: var(--amber-600); font-weight: 700;">Late Arrival</span>{% endif %}
+                </small>
+                {% endif %}
+              </td>
+              <td>
+                <span class="status-pill {% if row.status=='outside_site' %}red{% else %}green{% endif %}">
+                  <i></i>
+                  {% if row.status=='outside_site' %}DEPARTED SITE{% elif row.source=='manager_local' %}LOCAL ENTRY{% else %}ON SITE{% endif %}
+                </span>
+                <small class="table-sub">
+                  {{ (row.worked_minutes or 0)//60 }}h {{ (row.worked_minutes or 0)%60 }}m
+                  {% if row.worked_minutes|int > 480 %}
+                  <span style="color: var(--indigo-600); font-weight: 700;">· OT {{ (row.worked_minutes|int - 480)//60 }}h</span>
+                  {% endif %}
+                </small>
+              </td>
+              <td>
+                {% if row.last_ping %}
+                <span style="font-family: var(--font-mono); font-size: 11.5px;">{{ row.last_ping|clock }}</span>
+                {% else %}
+                <span style="color: var(--slate-400); font-size: 11.5px;">No GPS ping</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="empty" style="text-align: center; padding: 36px 12px;">
+                No active shifts matching the specified filters.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- Real-Time Alerts Queue Card -->
+    <article class="card alerts-card">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">SITE SAFETY & GEOFENCE</div>
+          <h2>Alert Queue <span class="count-badge" id="alert-badge">{{ alerts|length }}</span></h2>
+        </div>
+        <span class="alert-mark">!</span>
+      </div>
+      
+      <div id="alerts-list">
+        {% for alert in alerts %}
+        <div class="alert-item" data-alert="{{ alert.id }}">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-body">
+            <b>{% if alert.kind=='sos' %}🚨 {{ alert.worker_name }} SENT SOS REQUEST{% else %}⚠️ {{ alert.worker_name }} Left Geofence{% endif %}</b>
+            <p>{{ alert.site_name }} · {{ alert.created_at|clock }}</p>
+            <small>{{ alert.message }}</small>
+            <button class="ack-btn" data-ack="{{ alert.id }}" type="button">Acknowledge Alert ✓</button>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-alert" id="no-alerts">
+          <span>✓</span>
+          <b>Perimeter Secure</b>
+          <p>No unacknowledged safety alerts or boundary deviations.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <!-- Section 2: Client Sites & Boundary Management -->
+  <section class="section-heading" id="client-sites">
+    <div>
+      <div class="eyebrow">WORKPLACE GEOFENCES</div>
+      <h2>Client Facilities & Boundaries</h2>
+    </div>
+    <p>Configure satellite coordinates, perimeter radiuses, and facility capacity limits.</p>
+  </section>
+
+  <section class="site-grid">
+    {% for site in sites %}
+    <article class="card client-site">
+      <div class="site-card-top">
+        <div class="site-symbol">🏢</div>
+        <span class="site-radius">
+          {{ site.radius_m }}m Radius · {{ occupancy.get(site.id,0) }}{% if site.capacity %}/{{ site.capacity }}{% endif %} Active
+        </span>
+      </div>
+      
+      <div class="eyebrow">CLIENT FACILITY</div>
+      <h3>{{ site.name }}</h3>
+      <p>{{ site.address }}</p>
+      
+      {% if site.capacity and site.capacity > 0 %}
+      <div style="margin-bottom: 12px;">
+        {% set occ_pct = ((occupancy.get(site.id,0) / site.capacity) * 100)|round|int %}
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; font-weight: 700; color: var(--slate-600);">
+          <span>Occupancy</span>
+          <span>{{ occ_pct }}%</span>
+        </div>
+        <div class="completion-track">
+          <span style="width: {{ occ_pct if occ_pct <= 100 else 100 }}%; {% if occ_pct > 90 %}background: var(--rose-500);{% endif %}"></span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Precision Interactive Geofence Map -->
+      <div class="site-mini-map-wrap" style="margin: 8px 0 10px; position: relative;">
+        <div id="site-map-{{ site.id }}" class="site-mini-map"
+             data-site-id="{{ site.id }}"
+             data-site-lat="{{ site.latitude }}"
+             data-site-lng="{{ site.longitude }}"
+             data-site-radius="{{ site.radius_m }}"
+             data-site-name="{{ site.name }}"
+             style="height: 165px; width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-light); z-index: 1;">
+        </div>
+        <div style="position: absolute; top: 8px; right: 8px; z-index: 500; background: rgba(15, 23, 42, 0.85); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-family: var(--font-mono); font-weight: 700;">
+          {{ site.radius_m }}m Boundary
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <a class="map-link" href="{{ site.map_url or '#' }}" target="_blank" rel="noopener">
+          <span>View on Google Maps</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+        <small style="font-size: 10.5px; color: var(--slate-500); font-weight: 600;">Click map to adjust pin</small>
+      </div>
+
+      <!-- Boundary Configuration Form -->
+      <form method="post" action="{{ url_for('update_site',site_id=site.id) }}" class="pin-form" data-site-form="{{ site.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="pin-heading">
+          <b>Geofence Boundary</b>
+          <button class="text-button" type="button" data-fill-site-location>📍 Set My Location as Pin</button>
+        </div>
+        
+        <div class="pin-fields">
+          <label>Latitude<input name="latitude" type="number" step="any" value="{{ site.latitude }}" required></label>
+          <label>Longitude<input name="longitude" type="number" step="any" value="{{ site.longitude }}" required></label>
+          <label>Radius (Meters)<input name="radius_m" type="number" min="25" max="5000" value="{{ site.radius_m }}" required></label>
+          <label>Capacity<input name="capacity" type="number" min="0" max="10000" value="{{ site.capacity }}" placeholder="0 = Unlimited"></label>
+        </div>
+        
+        <button class="btn secondary full" type="submit" style="min-height: 38px; margin-top: 6px;">
+          <span>Update Boundary Settings</span>
+        </button>
+        <small class="pin-help">Stand at the facility entrance before capturing coordinates for optimal perimeter accuracy.</small>
+      </form>
+    </article>
+    {% endfor %}
+  </section>
+
+  <!-- Section 3: Team Administration & Registration -->
+  <section class="section-heading">
+    <div>
+      <div class="eyebrow">WORKFORCE ONBOARDING & ENTRY</div>
+      <h2>Team Administration</h2>
+    </div>
+    <p>Enroll employees, record on-site manager attendance, and register new client locations.</p>
+  </section>
+
+  <section class="tools-grid" id="team-tools">
+    <!-- Manual Local Attendance Entry Card -->
+    <article class="card">
+      <div class="eyebrow">DIRECT WORKFORCE ENTRY</div>
+      <h2>Record Attendance On-Site</h2>
+      <p class="muted">Record arrival on behalf of an employee experiencing device issues. Manager must be located inside the site geofence perimeter.</p>
+      
+      <form method="post" action="{{ url_for('manual_attendance') }}" class="inline-form" data-local-attendance style="display: grid; gap: 12px; margin-top: 14px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="latitude">
+        <input type="hidden" name="longitude">
+        
+        <label>
+          Select Employee
+          <select name="user_id" required>
+            {% for worker in workers if worker.active %}
+            <option value="{{ worker.id }}">{{ worker.name }} ({{ worker.employee_id or 'No ID' }})</option>
+            {% endfor %}
+          </select>
+        </label>
+        
+        <label>
+          Client Facility
+          <select name="site_id" required>
+            {% for site in sites %}
+            <option value="{{ site.id }}">{{ site.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        
+        <button class="btn primary" type="submit" style="min-height: 44px;">
+          <span>Verify Location & Record</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <div class="location-line local-status" style="margin-top: 4px;"></div>
+      </form>
+    </article>
+
+    <!-- Add New Workplace Facility Card -->
+    <article class="card">
+      <div class="eyebrow">NEW CLIENT INDUSTRIAL SITE</div>
+      <h2>Add Client Workplace</h2>
+      <p class="muted">Register an industrial site entrance. Click or drag on the map pin below, or capture GPS coordinates directly from your device.</p>
+      
+      <form method="post" action="{{ url_for('add_site') }}" class="site-form" data-new-site style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="name" placeholder="Client facility name" required style="grid-column: span 2;">
+        <input name="address" placeholder="Physical street address" required style="grid-column: span 2;">
+        <input name="latitude" id="new-site-lat" type="number" step="any" placeholder="Latitude" required>
+        <input name="longitude" id="new-site-lng" type="number" step="any" placeholder="Longitude" required>
+        <input name="radius_m" id="new-site-radius" type="number" min="25" max="5000" value="250" placeholder="Radius (meters)" required>
+        <input name="capacity" type="number" min="0" max="10000" value="0" placeholder="Capacity (0=none)">
+        <input name="map_url" placeholder="Google Maps URL (optional)" style="grid-column: span 2;">
+        
+        <!-- Interactive Leaflet Geofence Pin Picker Map -->
+        <div style="grid-column: span 2; margin: 4px 0 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--slate-700);">🗺️ Interactive Geofence Pin & Perimeter Picker</span>
+            <span style="font-size: 11px; color: var(--emerald-700); font-weight: 600;">Click or drag pin to position</span>
+          </div>
+          <div id="site-picker-map" style="height: 190px; width: 100%; border-radius: var(--radius-md); border: 1.5px solid var(--border-light); z-index: 1;"></div>
+        </div>
+
+        <button class="text-button" type="button" data-fill-site-location style="grid-column: span 2; justify-content: flex-start;">📍 Use My Device Location as Pin</button>
+        <button class="btn primary" type="submit" style="grid-column: span 2; justify-content: center; min-height: 44px;">
+          <span>Register Client Facility</span>
+        </button>
+      </form>
+    </article>
+
+    <!-- Comprehensive Employee Registration Card -->
+    <article class="card employee-register" style="grid-column: span 2;">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow">PERSONNEL ENROLLMENT</div>
+          <h2>Register Employee Profile</h2>
+          <p class="muted">Complete employee record, workplace allotment, credentials, and live camera photo for 1:1 biometric face verification.</p>
+        </div>
+      </div>
+      
+      <form method="post" enctype="multipart/form-data" action="{{ url_for('add_worker') }}" class="employee-form" id="worker-reg-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <fieldset class="form-section">
+          <legend>1. Personal Information</legend>
+          <div class="form-grid">
+            <label>Full Legal Name<input name="name" autocomplete="name" placeholder="e.g. Rahul Sharma" required></label>
+            <label>Employee ID Code<input name="employee_id" placeholder="e.g. EMP-2026-0042" required></label>
+            <label>Age<input name="age" type="number" min="18" max="100" placeholder="e.g. 28" required></label>
+            <label>Gender
+              <select name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </label>
+            <label>Permanent Address<textarea name="permanent_address" rows="2" placeholder="Permanent residential address" required></textarea></label>
+            <label>Communication Address<textarea name="communication_address" rows="2" placeholder="Current local communication address" required></textarea></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>2. Employment & Workplace Allotment</legend>
+          <div class="form-grid">
+            <label class="form-field-wide">
+              Allotted Client Workplace
+              <select name="site_id" required>
+                <option value="">Select Company Location for Attendance Restriction</option>
+                {% for site in sites %}
+                <option value="{{ site.id }}">{{ site.name }} ({{ site.address }})</option>
+                {% endfor %}
+              </select>
+              <small class="field-note">Employee attendance is geofenced strictly to this facility.</small>
+            </label>
+            <label>Job Designation / Role<input name="post" placeholder="e.g. Machine Operator / Safety Supervisor" required></label>
+            <label>Prior Experience Summary<textarea name="work_experience" rows="2" placeholder="e.g. 3 years in mechanical fabrication" required></textarea></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>3. Workspace Account Credentials</legend>
+          <div class="form-grid">
+            <label>Portal Login Username<input name="username" autocomplete="username" placeholder="e.g. rsharma" required></label>
+            <label>Temporary Account Password<input name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Min. 8 characters" required></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>4. Live Face Biometric Enrollment & Photo Capture</legend>
+          <div class="form-grid">
+            <div class="form-field-wide photo-enrollment-box" style="background: var(--slate-50); padding: 18px; border-radius: var(--radius-md); border: 1.5px dashed var(--border-light);">
+              <span class="field-title" style="display: block; font-weight: 700; margin-bottom: 4px; font-size: 13.5px; color: var(--slate-900);">Employee Biometric Face Reference</span>
+              <span class="field-note" style="display: block; margin-bottom: 14px; color: var(--slate-500); font-size: 12px;">
+                Take a live photo using the device camera for 1:1 facial biometric verification at check-in/out, or upload a clear portrait image.
+              </span>
+              
+              <!-- Camera Action Trigger & Options -->
+              <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <button type="button" class="btn primary" id="btn-open-reg-cam" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); min-height: 44px; padding: 0 20px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  <span>📷 Open Live Camera & Take Photo</span>
+                </button>
+                <span style="font-size: 12px; color: var(--slate-400); font-weight: 700;">— OR —</span>
+                <label class="btn secondary" style="cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; margin: 0; background: #fff;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <span>Upload Portrait File</span>
+                  <input name="profile_photo" id="reg-profile-photo-input" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" data-profile-photo style="display: none;">
+                </label>
+              </div>
+
+              <!-- Hidden input for base64 captured frame -->
+              <input type="hidden" name="photo_base64" id="reg-photo-base64">
+
+              <!-- Live Photo Preview & Verification Status Card -->
+              <div id="photo-preview-container" style="display: none; align-items: center; justify-content: space-between; background: #ecfdf5; padding: 14px 18px; border-radius: var(--radius-md); border: 1.5px solid var(--emerald-400); margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <img id="photo-preview-img" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #10b981; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);" alt="Captured Photo Preview">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="status-pill green"><i></i> BIOMETRIC PHOTO CAPTURED</span>
+                      <span id="photo-source-tag" style="font-size: 11px; color: var(--emerald-800); font-weight: 700;">Live Camera Snapshot</span>
+                    </div>
+                    <small style="display: block; font-size: 11.5px; color: var(--slate-600); margin-top: 3px;">
+                      Enrolled for 1:1 facial match verification during check-in and check-out.
+                    </small>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn secondary btn-sm" id="btn-retake-photo" style="background: #fff; border-color: #cbd5e1; font-size: 11.5px; padding: 6px 12px;">Retake ↺</button>
+                  <button type="button" class="btn secondary btn-sm" id="btn-clear-photo" style="background: #fff; border-color: #fca5a5; color: var(--rose-600); font-size: 11.5px; padding: 6px 12px;">Clear ✕</button>
+                </div>
+              </div>
+            </div>
+
+            <label class="photo-consent" style="grid-column: span 2;">
+              <input type="checkbox" name="photo_consent" id="chk-photo-consent" value="yes" checked required>
+              <span>Employee confirms consent to store this profile photo in company operational records.</span>
+            </label>
+            <label class="photo-consent" style="grid-column: span 2;">
+              <input type="checkbox" name="face_consent" id="chk-face-consent" value="yes" checked>
+              <span><b>Enforce Biometric Face Verification:</b> Require live camera face match before attendance can be marked at check-in & check-out.</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <button class="btn primary employee-submit" type="submit">
+          <span>Complete Employee Enrollment</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </button>
+      </form>
+    </article>
+  </section>
+
+  <!-- Section 4: Operations: Shift Schedules & Approvals -->
+  <section class="section-heading" id="manager-operations">
+    <div>
+      <div class="eyebrow">FIELD LOGISTICS & APPROVALS</div>
+      <h2>Shift Planning & Requests</h2>
+    </div>
+    <p>Assign dated workforce shifts, review leave requests, and process attendance correction tickets.</p>
+  </section>
+
+  <section class="tools-grid advanced-grid">
+    <!-- Assign Shift Schedule -->
+    <article class="card">
+      <div class="eyebrow">LOGISTICS</div>
+      <h2>Assign Shift Schedule</h2>
+      <form id="shift-schedule-form" method="post" action="{{ url_for('save_schedule') }}" style="display: grid; gap: 10px; margin-top: 14px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Saved shift template
+          <select data-shift-template-select><option value="">Enter shift details manually</option>{% for template in shift_templates %}<option value="{{ template.id }}" data-site="{{ template.site_id }}" data-start="{{ template.start_time }}" data-end="{{ template.end_time }}">{{ template.name }} · {{ template.site_name }}</option>{% endfor %}</select>
+        </label>
+        <label>Employee
+          <select name="worker_id" required>
+            {% for worker in worker_options %}
+            <option value="{{ worker.id }}">{{ worker.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        
+        <label>Workplace Facility
+          <select name="site_id" id="schedule-site" required>
+            {% for site in sites %}
+            <option value="{{ site.id }}">{{ site.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <label>Shift Date<input type="date" name="work_date" required></label>
+          <label>Start Time<input type="time" name="start_time" id="schedule-start" required></label>
+          <label>End Time<input type="time" name="end_time" id="schedule-end" required></label>
+        </div>
+        <label>Repeat weekly
+          <select name="repeat_weeks">
+            {% for weeks in range(1, 13) %}<option value="{{ weeks }}">{{ weeks }} week{% if weeks != 1 %}s{% endif %}</option>{% endfor %}
+          </select>
+          <small class="field-note">Up to 12 weekly assignments. Approved leave and existing shifts are checked before saving.</small>
+        </label>
+        
+        <button class="btn secondary" style="justify-content: center; min-height: 42px;">Save Shift Schedule</button>
+      </form>
+
+      <div style="margin-top: 18px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+        <div class="eyebrow" style="font-size: 9.5px; margin-bottom: 8px;">UPCOMING ALLOTMENTS</div>
+        {% for sh in schedules %}
+        <div class="schedule-item">
+          <span class="schedule-date">{{ sh.work_date }}</span>
+          <div class="schedule-info">
+            <b>{{ sh.worker_name }} · {{ sh.site_name }}</b>
+            <small>{{ sh.start_time }} &ndash; {{ sh.end_time }}</small>
+            <small class="table-sub">{{ sh.confirmation_status|title }}{% if sh.worker_note %} · {{ sh.worker_note }}{% endif %}</small>
+          </div>
+        </div>
+        {% else %}
+        <p class="muted" style="text-align: center; padding: 12px 0;">No upcoming shift allotments.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <!-- Share Team Announcement -->
+    <article class="card">
+      <div class="eyebrow">COMMUNICATIONS</div>
+      <h2>Publish Team Notice</h2>
+      <form method="post" action="{{ url_for('post_announcement') }}" style="display: grid; gap: 10px; margin-top: 14px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Notice Headline<input name="title" maxlength="120" placeholder="e.g. Safety Briefing on Mon 9 AM" required></label>
+        <label>Detailed Message<textarea name="body" maxlength="1500" placeholder="Broadcast message details for field team" rows="3" required></textarea></label>
+        <button class="btn secondary" style="justify-content: center; min-height: 42px;">Publish Announcement</button>
+      </form>
+
+      <div style="margin-top: 18px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+        <div class="eyebrow" style="font-size: 9.5px; margin-bottom: 8px;">RECENT ANNOUNCEMENTS</div>
+        {% for item in announcements %}
+        <div class="announcement">
+          <b>{{ item.title }}</b>
+          <p>{{ item.body }}</p>
+          <small class="table-sub">{{ item.created_at|clock }}</small>
+        </div>
+        {% endfor %}
+      </div>
+    </article>
+
+    <!-- Leave Requests Review Queue -->
+    <article class="card">
+      <div class="eyebrow">TIME OFF APPROVALS</div>
+      <h2>Leave Requests</h2>
+      <div style="margin-top: 14px;">
+        {% for item in leaves %}
+        <div class="approval-row">
+          <b>{{ item.worker_name }}</b>
+          <p>{{ item.start_date }} to {{ item.end_date }} · Reason: {{ item.reason }}</p>
+          <form method="post" action="{{ url_for('decide_leave',leave_id=item.id,decision='approve') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input name="manager_note" placeholder="Optional approval remark">
+            <button class="btn secondary" style="min-height: 36px;">Approve</button>
+          </form>
+          <form method="post" action="{{ url_for('decide_leave',leave_id=item.id,decision='decline') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="text-button" style="color: var(--rose-600);">Decline</button>
+          </form>
+        </div>
+        {% else %}
+        <p class="muted" style="text-align: center; padding: 24px 0;">No pending leave requests awaiting decision.</p>
+        {% endfor %}
+      </div>
+    </article>
+
+    <!-- Attendance Corrections Queue -->
+    <article class="card">
+      <div class="eyebrow">DISCREPANCY RESOLUTION</div>
+      <h2>Attendance Corrections</h2>
+      <div style="margin-top: 14px;">
+        {% for item in corrections %}
+        <div class="approval-row">
+          <b>{{ item.worker_name }}</b>
+          <p>{{ item.reason }} · Requested In: {{ item.requested_check_in|clock }}{% if item.requested_check_out %} to {{ item.requested_check_out|clock }}{% endif %}</p>
+          <form method="post" action="{{ url_for('decide_correction',request_id=item.id,decision='approve') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn secondary" style="min-height: 36px;">Approve Correction</button>
+          </form>
+          <form method="post" action="{{ url_for('decide_correction',request_id=item.id,decision='decline') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="text-button" style="color: var(--rose-600);">Decline</button>
+          </form>
+        </div>
+        {% else %}
+        <p class="muted" style="text-align: center; padding: 24px 0;">No attendance correction requests waiting review.</p>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <!-- Advanced workforce operations -->
+  <section class="section-heading" id="advanced-operations">
+    <div>
+      <div class="eyebrow">WORKFORCE INTELLIGENCE</div>
+      <h2>Advanced Operations</h2>
+    </div>
+    <p>Forecast coverage, review exceptions, and coordinate safer shift handovers.</p>
+  </section>
+  <section class="tools-grid advanced-grid">
+    <article class="card readiness-card">
+      <div class="card-head"><div><div class="eyebrow">EXPLAINABLE RISK MODEL · NEXT 7 DAYS</div><h2>Shift Readiness & Fatigue Watch</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_schedule_readiness') }}">Export Readiness CSV</a></div>
+      <p class="muted">Heuristic planning flags, not a compliance verdict. Signals include confirmations, credentials, rest gaps, weekly hours, consecutive days, attendance history, punctuality, and recent safety checks.</p>
+      <div class="report-kpis compliance-kpis"><article><span>CRITICAL</span><b class="text-danger">{{ readiness_counts.Critical }}</b></article><article><span>HIGH</span><b class="text-danger">{{ readiness_counts.High }}</b></article><article><span>WATCH</span><b class="text-warning">{{ readiness_counts.Watch }}</b></article><article><span>READY</span><b>{{ readiness_counts.Ready }}</b></article></div>
+      {% if readiness_sites %}<div class="readiness-site-strip">{% for site in readiness_sites %}<div><b>{{ site.site_name }}</b><small>{{ site.critical }} critical · {{ site.high }} high · avg {{ site.average_score }}/100 across {{ site.shifts }} shifts</small></div>{% endfor %}</div>{% endif %}
+      <div class="table-wrap"><table><thead><tr><th>DATE / SITE</th><th>WORKER / SIGNALS</th><th>SHIFT STATUS</th><th>RISK</th><th>LOAD</th><th>ACTION</th></tr></thead><tbody>
+        {% for item in schedule_readiness[:40] %}
+          {% set band_class = 'red' if item.risk_band in ['Critical','High'] else ('amber' if item.risk_band=='Watch' else 'green') %}
+          <tr><td><b>{{ item.work_date }}</b><small class="table-sub">{{ item.site_name }}</small></td><td><b>{{ item.worker_name }}</b><small class="table-sub readiness-reasons">{{ item.reasons|join(' · ') }}</small></td><td>{{ item.start_time }}–{{ item.end_time }}<small class="table-sub">{{ item.confirmation_status|title }}</small></td><td><span class="status-pill {{ band_class }}">{{ item.risk_band }} · {{ item.risk_score }}</span></td><td>{{ item.weekly_hours }}h / week<small class="table-sub">{{ item.consecutive_days }} consecutive day(s){% if item.rest_hours is not none %} · {{ item.rest_hours }}h rest{% endif %}</small></td><td><a class="text-button" href="{{ url_for('manager',match_site=item.site_id,match_date=item.work_date,match_start=item.start_time,match_end=item.end_time,match_credential=item.required_credential) }}#advanced-operations">Find eligible cover</a></td></tr>
+        {% else %}<tr><td colspan="6" class="empty">No unstarted scheduled shifts in the next seven days.</td></tr>{% endfor %}
+      </tbody></table></div>
+      {% if schedule_readiness|length > 40 %}<p class="muted">Showing the 40 highest-risk shifts of {{ schedule_readiness|length }}. Download the CSV for the complete roster.</p>{% endif %}
+      <small class="field-note">Planning thresholds: short rest under 11 hours; workload review above 48 scheduled hours in a calendar week. Scores combine multiple signals and should be reviewed with context.</small>
+    </article>
+    <article class="card attendance-exception-card">
+      <div class="card-head"><div><div class="eyebrow">ROBUST BASELINE ANALYSIS · LAST 30 DAYS</div><h2>Attendance Exception Review</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_attendance_exceptions') }}">Export CSV</a></div>
+      <p class="muted">Uses median and median absolute deviation (MAD) to reduce outlier sensitivity. Personal baselines need five samples; site peers provide a fallback with ten. Flags are for human review, not misconduct conclusions.</p>
+      <div class="report-kpis compliance-kpis"><article><span>CRITICAL</span><b class="text-danger">{{ attendance_exception_counts.Critical }}</b></article><article><span>HIGH</span><b class="text-danger">{{ attendance_exception_counts.High }}</b></article><article><span>REVIEW</span><b class="text-warning">{{ attendance_exception_counts.Review }}</b></article><article><span>INFO</span><b>{{ attendance_exception_counts.Info }}</b></article></div>
+      <div class="table-wrap"><table><thead><tr><th>CHECK-IN / WORKER</th><th>EXPLAINABLE FLAGS</th><th>NET TIME / GPS</th><th>RISK</th><th>SOURCE</th></tr></thead><tbody>
+        {% for item in attendance_exceptions[:40] %}
+          {% set band_class = 'red' if item.risk_band in ['Critical','High'] else ('amber' if item.risk_band=='Review' else 'gray') %}
+          <tr><td><b>{{ item.worker_name }}</b><small class="table-sub">{{ item.check_in|clock }} · {{ item.site_name }}</small></td><td><small class="exception-flags">{{ item.flags|join(' · ') }}</small>{% if item.evidence.duration_baseline is defined %}<small class="table-sub">{{ item.evidence.duration_baseline_type|title }} duration baseline: {{ (item.evidence.duration_baseline|int // 60) }}h {{ (item.evidence.duration_baseline|int % 60) }}m ({{ item.evidence.duration_samples }} samples)</small>{% endif %}</td><td>{{ (item.minutes_worked|int // 60) }}h {{ (item.minutes_worked|int % 60) }}m{% if item.site_distance_m is not none %}<small class="table-sub">{{ item.site_distance_m }}m from site</small>{% endif %}</td><td><span class="status-pill {{ band_class }}">{{ item.risk_band }} · {{ item.risk_score }}</span></td><td>{{ item.source|replace('_',' ')|title }}<small class="table-sub">{{ item.status|replace('_',' ')|title }}</small></td></tr>
+        {% else %}<tr><td colspan="5" class="empty">No attendance exceptions found in the last 30 days.</td></tr>{% endfor %}
+      </tbody></table></div>
+      {% if attendance_exceptions|length > 40 %}<p class="muted">Showing 40 highest-scoring records of {{ attendance_exceptions|length }}. Export CSV for the full queue.</p>{% endif %}
+    </article>
+    <article class="card site-safety-intelligence">
+      <div class="card-head"><div><div class="eyebrow">EXPOSURE-ADJUSTED · ROLLING 90 DAYS</div><h2>Site Safety Trend Intelligence</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_site_safety_risk') }}">Export Site Risk CSV</a></div>
+      <p class="muted">Severity-weighted incidents and failed inspection items are time-decayed, divided by attendance exposure, and smoothed toward the overall program baseline for low-volume sites.</p>
+      <div class="report-kpis compliance-kpis"><article><span>HIGH RISK SITES</span><b class="text-danger">{{ site_safety_summary.High }}</b></article><article><span>ELEVATED</span><b class="text-warning">{{ site_safety_summary.Elevated }}</b></article><article><span>RISING TREND</span><b>{{ site_safety_summary.Rising }}</b></article><article><span>WATCH</span><b>{{ site_safety_summary.Watch }}</b></article></div>
+      <div class="table-wrap"><table><thead><tr><th>SITE / CONFIDENCE</th><th>SAFETY SCORE</th><th>TREND</th><th>EXPOSURE</th><th>EVENTS / CHECKS</th><th>RECOMMENDED REVIEW</th></tr></thead><tbody>
+        {% for item in site_safety_risks %}
+          {% set band_class = 'red' if item.risk_band=='High' else ('amber' if item.risk_band in ['Elevated','Watch'] else 'green') %}
+          <tr><td><b>{{ item.site_name }}</b><small class="table-sub">{{ item.confidence }} confidence · {{ item.capacity or 'No capacity cap' }}</small></td><td><span class="status-pill {{ band_class }}">{{ item.risk_band }} · {{ item.risk_score }}/100</span><small class="table-sub">{{ item.risk_per_100_shifts }} weighted points/100 shifts</small></td><td><span class="{% if item.trend=='Rising' %}text-danger{% elif item.trend=='Improving' %}text-success{% else %}muted{% endif %}">{{ item.trend }} · {{ item.trend_change_label }}</span></td><td>{{ item.exposures }} shifts</td><td>{{ item.incident_count }} incidents · {{ item.unresolved_count }} open<small class="table-sub">{{ item.failed_checks }}/{{ item.checks }} inspections failed · {{ item.failed_check_rate }}%</small></td><td><small class="site-risk-action">{{ item.action }}</small>{% if item.common_category %}<small class="table-sub">Most frequent: {{ item.common_category }}</small>{% endif %}</td></tr>
+        {% else %}<tr><td colspan="6" class="empty">No active sites to analyze.</td></tr>{% endfor %}
+      </tbody></table></div>
+      <small class="field-note">Thirty-day half-life reduces the influence of older events. Bayesian smoothing uses 20 prior shifts; risk bands are operational prioritization signals, not safety certifications.</small>
+    </article>
+    <article class="card smart-staff-card">
+      <div class="eyebrow">EXPLAINABLE MATCHING · 0–100 FIT SCORE</div><h2>Smart Shift Staffing</h2>
+      <p class="muted">Ranks eligible workers using site experience, punctuality, attendance reliability, recent workload, fatigue, and no-show history. Schedule and compliance conflicts are excluded first.</p>
+      <form method="get" class="template-form smart-match-form">
+        <label>Client site<select name="match_site" required>{% for site in sites %}<option value="{{ site.id }}" {% if match_site|string == site.id|string %}selected{% endif %}>{{ site.name }}</option>{% endfor %}</select></label>
+        <label>Shift date<input type="date" name="match_date" min="{{ today }}" value="{{ match_day }}" required></label>
+        <div class="compliance-date-grid"><label>Start<input type="time" name="match_start" value="{{ match_start }}" required></label><label>End<input type="time" name="match_end" value="{{ match_end }}" required></label></div>
+        <label>Required credential (optional)<select name="match_credential"><option value="">No credential filter</option>{% for item in credential_options %}<option value="{{ item.credential_name }}" {% if match_credential==item.credential_name %}selected{% endif %}>{{ item.credential_name }}</option>{% endfor %}</select></label>
+        <button class="btn secondary">Rank Eligible Workers</button>
+      </form>
+      {% if smart_error %}<p class="empty">{{ smart_error }}</p>{% else %}
+      <p class="muted">{{ smart_matches|length }} eligible · {{ smart_excluded }} excluded by eligibility rules.</p>
+      {% for person in smart_matches[:5] %}
+      <div class="smart-match-row"><div><b>{{ loop.index }}. {{ person.name }}</b><small>{{ person.reasons|join(' · ') }}</small></div><strong>{{ person.score }}<small>/100</small></strong></div>
+      <form method="post" action="{{ url_for('save_schedule') }}" class="smart-assign-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="worker_id" value="{{ person.id }}"><input type="hidden" name="site_id" value="{{ match_site }}"><input type="hidden" name="work_date" value="{{ match_day }}"><input type="hidden" name="start_time" value="{{ match_start }}"><input type="hidden" name="end_time" value="{{ match_end }}"><input type="hidden" name="repeat_weeks" value="1">
+        <button class="text-button">Assign {{ person.name }}</button>
+      </form>
+      {% else %}<p class="empty">No workers meet the availability and conflict rules for this shift.</p>{% endfor %}{% endif %}
+    </article>
+    <article class="card">
+      <div class="card-head"><div><div class="eyebrow">DATA-DRIVEN · NEXT 7 DAYS</div><h2>Demand & Coverage Forecast</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_staffing_forecast') }}">Export CSV</a></div>
+      <p class="muted">Demand uses the last eight same-weekday schedules with more weight on recent weeks and median smoothing. Manager minimums can raise the forecast floor.</p>
+      <div class="report-kpis compliance-kpis"><article><span>UNDERSTAFFED SITE-DAYS</span><b class="text-danger">{{ forecast_gap_count }}</b></article><article><span>CAPACITY RISKS</span><b class="text-warning">{{ forecast_capacity_risks }}</b></article><article><span>LOW HISTORY</span><b>{{ forecast_low_confidence }}</b></article></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>DATE / SITE</th><th>DEMAND</th><th>PLANNED</th><th>GAP / SIGNAL</th><th>HISTORY</th></tr></thead>
+          <tbody>
+            {% for item in demand_forecast %}
+            <tr><td><b>{{ item.work_date }}</b><small class="table-sub">{{ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][item.weekday] }} · {{ item.site_name }}</small></td><td>{{ item.expected }}<small class="table-sub">history {{ item.historical_demand }}{% if item.manager_minimum %} · min {{ item.manager_minimum }}{% endif %}</small></td><td>{{ item.scheduled_count }}</td><td>{% if item.capacity_risk %}<span class="status-pill red">Over capacity ({{ item.capacity }})</span>{% elif item.gap %}<a class="status-pill amber" href="{{ url_for('manager',match_site=item.site_id,match_date=item.work_date,match_start='08:00',match_end='16:00') }}#advanced-operations">Short {{ item.gap }} · find staff</a>{% elif item.surplus %}<span class="status-pill blue">Surplus {{ item.surplus }}</span>{% else %}<span class="status-pill green">Covered</span>{% endif %}</td><td>{{ item.confidence }}<small class="table-sub">{{ item.observations }}/8 active weeks</small></td></tr>
+            {% else %}<tr><td colspan="5" class="empty">Add active client sites to generate a forecast.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <form method="get" action="{{ url_for('manager') }}#coverage-planner" class="coverage-plan-launch">
+        <input type="hidden" name="build_plan" value="1"><button class="btn primary">Build Optimized Coverage Plan</button>
+        <small>Preview assignments for every forecast gap, with daily uniqueness and a 48-hour planner cap.</small>
+      </form>
+    </article>
+    <article class="card">
+      <div class="eyebrow">SITE SERVICE LEVELS</div><h2>Weekly Staffing Minimums</h2>
+      <p class="muted">Set a site-specific minimum per weekday. The forecast uses the higher of this target and learned demand.</p>
+      <form method="post" action="{{ url_for('save_staffing_target') }}" class="template-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Client site<select name="site_id" required>{% for site in sites %}<option value="{{ site.id }}">{{ site.name }}</option>{% endfor %}</select></label>
+        <label>Weekday<select name="weekday" required>{% for day in range(7) %}<option value="{{ day }}">{{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][day] }}</option>{% endfor %}</select></label>
+        <label>Minimum workers<input name="minimum_workers" type="number" min="0" max="10000" value="1" required></label>
+        <div class="compliance-date-grid"><label>Shift starts<input name="start_time" type="time" value="08:00" required></label><label>Shift ends<input name="end_time" type="time" value="16:00" required></label></div>
+        <label>Required credential<select name="required_credential"><option value="">No credential requirement</option>{% for item in credential_options %}<option value="{{ item.credential_name }}">{{ item.credential_name }}</option>{% endfor %}</select></label>
+        <button class="btn secondary">Save Weekly Minimum</button>
+      </form>
+      {% for target in staffing_target_rows %}<div class="schedule-item"><span class="schedule-date">{{ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][target.weekday] }}</span><div class="schedule-info"><b>{{ target.site_name }}</b><small>Minimum {{ target.minimum_workers }} · {{ target.start_time }}–{{ target.end_time }}{% if target.required_credential %} · {{ target.required_credential }}{% endif %}</small></div></div>{% else %}<p class="empty">No manager minimums saved; forecasts use historical schedule patterns.</p>{% endfor %}
+    </article>
+    {% if coverage_plan_requested and coverage_plan %}
+    <article class="card" id="coverage-planner">
+      <div class="eyebrow">GLOBAL GREEDY OPTIMIZER · REVIEW BEFORE APPLYING</div><h2>Optimized Coverage Plan</h2>
+      <p class="muted">{{ coverage_plan.slot_count }} proposed shifts · {{ coverage_plan.workers_used }} workers · {{ coverage_plan.sites_covered }} sites · {{ coverage_plan.gap_count }} unresolved slots. Highest fit is selected while spreading forecast-week hours.</p>
+      <div class="table-wrap"><table><thead><tr><th>DATE / SITE</th><th>WORKER</th><th>SHIFT</th><th>FIT</th><th>PROJECTED HOURS</th></tr></thead><tbody>
+        {% for item in coverage_plan.assignments %}<tr><td><b>{{ item.work_date }}</b><small class="table-sub">{{ item.site_name }}</small></td><td><b>{{ item.worker_name }}</b><small class="table-sub">{{ item.reasons|join(' · ') }}</small></td><td>{{ item.start_time }}–{{ item.end_time }}</td><td>{{ item.score }}/100<small class="table-sub">base {{ item.base_score }}</small></td><td>{{ item.hours_after_assignment }}h</td></tr>{% else %}<tr><td colspan="5" class="empty">No eligible open slots were found.</td></tr>{% endfor %}
+      </tbody></table></div>
+      {% for item in coverage_plan.gaps %}<div class="schedule-item"><span class="schedule-date text-danger">{{ item.count }} open</span><div class="schedule-info"><b>{{ item.work_date }} · {{ item.site_name }}</b><small>{{ item.reason }}</small></div></div>{% endfor %}
+      {% if coverage_plan.slot_count %}<form method="post" action="{{ url_for('apply_coverage_plan') }}" class="coverage-plan-apply"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn primary">Recheck & Apply {{ coverage_plan.slot_count }} Assignments</button><small>Eligibility and coverage are recomputed before the batch is saved atomically.</small></form>{% endif %}
+    </article>
+    {% endif %}
+    <article class="card">
+      <div class="eyebrow">REUSABLE LOGISTICS</div><h2>Shift Templates</h2>
+      <form method="post" action="{{ url_for('save_shift_template') }}" class="template-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Template name<input name="name" maxlength="80" required placeholder="Day Security Shift"></label>
+        <label>Client site<select name="site_id" required>{% for site in sites %}<option value="{{ site.id }}">{{ site.name }}</option>{% endfor %}</select></label>
+        <div class="compliance-date-grid"><label>Start<input type="time" name="start_time" required></label><label>End<input type="time" name="end_time" required></label></div>
+        <button class="btn secondary">Save Template</button>
+      </form>
+      {% for item in shift_templates %}<div class="schedule-item"><span class="schedule-date">{{ item.start_time }}</span><div class="schedule-info"><b>{{ item.name }} · {{ item.site_name }}</b><small>Ends {{ item.end_time }} · selectable in schedule form</small></div></div>{% else %}<p class="muted">Save common shift patterns to fill assignments faster.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">WORKER AVAILABILITY</div><h2>Weekly Availability</h2>
+      {% for item in worker_availability %}<div class="schedule-item"><span class="schedule-date">{{ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][item.weekday] }}</span><div class="schedule-info"><b>{{ item.worker_name }}</b><small>{{ item.start_time }}–{{ item.end_time }}</small></div></div>{% else %}<p class="muted">Workers have not submitted weekly availability.</p>{% endfor %}
+      <small class="field-note">If a worker submits availability, schedule creation is limited to those days and hours.</small>
+    </article>
+    <article class="card">
+      <div class="eyebrow">SHIFT CONFIRMATION</div><h2>Worker Responses</h2>
+      <div class="report-kpis compliance-kpis"><article><span>SCHEDULED TODAY</span><b>{{ today_schedule_count }}</b></article><article><span>NO CHECK-IN</span><b class="text-danger">{{ today_no_show_count }}</b></article><article><span>UNSCHEDULED</span><b>{{ today_unplanned_count }}</b></article></div>
+      {% for item in pending_confirmations %}<div class="schedule-item"><span class="schedule-date {% if item.confirmation_status=='declined' %}text-danger{% endif %}">{{ item.confirmation_status|title }}</span><div class="schedule-info"><b>{{ item.worker_name }} · {{ item.work_date }}</b><small>{{ item.site_name }} · {{ item.start_time }}–{{ item.end_time }}{% if item.worker_note %} · {{ item.worker_note }}{% endif %}</small>
+        <form method="post" action="{{ url_for('reopen_schedule_confirmation',schedule_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button">Request confirmation again</button></form>
+      </div></div>{% else %}<p class="muted">All upcoming shifts are confirmed.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">BREAK POLICY WATCH</div><h2>Extended Break Alerts</h2>
+      {% for item in open_break_alerts %}<div class="schedule-item"><span class="schedule-date text-warning">{{ item.break_minutes }} min</span><div class="schedule-info"><b>{{ item.worker_name }} · {{ item.site_name }}</b><small>Break began {{ item.started_at|clock }}</small></div></div>{% else %}<p class="muted">No active break has exceeded 60 minutes.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="card-head"><div><div class="eyebrow">LIVE EXCEPTIONS</div><h2>Overtime & GPS Health</h2></div></div>
+      <p class="muted">{{ overtime_rows|length }} active shift(s) have reached 8 net hours. {{ stale_ping_rows|length }} active shift(s) have no location ping in the last 15 minutes.</p>
+      {% for row in overtime_rows[:6] %}<div class="schedule-item"><span class="schedule-date" style="color:var(--amber-700)">OT RISK</span><div class="schedule-info"><b>{{ row.name }} · {{ row.site_name }}</b><small>{{ (row.worked_minutes|int // 60) }}h {{ (row.worked_minutes|int % 60) }}m worked</small></div></div>{% endfor %}
+      {% for row in stale_ping_rows[:6] %}<div class="schedule-item"><span class="schedule-date" style="color:var(--rose-600)">GPS</span><div class="schedule-info"><b>{{ row.name }} · {{ row.site_name }}</b><small>{% if row.last_ping %}Last ping {{ row.last_ping|clock }}{% else %}No location ping received{% endif %}</small></div></div>{% endfor %}
+      {% if not overtime_rows and not stale_ping_rows %}<p class="empty">No overtime or stale-location exceptions.</p>{% endif %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">SAFETY RESPONSE</div><h2>Incident Review</h2>
+      {% for item in incidents %}
+      <div class="announcement">
+        <b>{{ item.severity|upper }} · {{ item.category }} · {{ item.worker_name }}</b>
+        <small class="table-sub">{{ item.site_name }} · {{ item.created_at|clock }}</small>
+        <p>{{ item.details }}</p>
+        <form method="post" action="{{ url_for('update_incident',incident_id=item.id) }}" class="ops-inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select name="status" aria-label="Incident status"><option value="open" {% if item.status=='open' %}selected{% endif %}>Open</option><option value="reviewing" {% if item.status=='reviewing' %}selected{% endif %}>Reviewing</option><option value="resolved">Resolved</option></select>
+          <input name="manager_note" maxlength="500" value="{{ item.manager_note or '' }}" placeholder="Manager response">
+          <button class="btn secondary btn-sm">Save</button>
+        </form>
+      </div>
+      {% else %}<p class="empty">No unresolved safety incidents.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">SCHEDULE COORDINATION</div><h2>Shift Transfer Requests</h2>
+      {% for item in transfer_requests %}
+      <div class="approval-row">
+        <b>{{ item.requester_name }} → {{ item.target_name }}</b>
+        <p>{{ item.work_date }} · {{ item.start_time }}–{{ item.end_time }} · {{ item.site_name }}<br>{{ item.reason }}</p>
+        <form method="post" action="{{ url_for('decide_shift_transfer',transfer_id=item.id,decision='approve') }}" class="ops-inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="manager_note" maxlength="500" placeholder="Optional note">
+          <button class="btn secondary btn-sm">Approve & Reassign</button>
+        </form>
+        <form method="post" action="{{ url_for('decide_shift_transfer',transfer_id=item.id,decision='decline') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button" style="color:var(--rose-600)">Decline</button></form>
+      </div>
+      {% else %}<p class="empty">No shift transfer requests to review.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">SHIFT CONTINUITY</div><h2>Recent Handover Notes</h2>
+      {% for item in handover_notes %}<div class="announcement"><b>{{ item.worker_name }} · {{ item.site_name }}</b><small class="table-sub">{{ item.created_at|clock }}</small><p>{{ item.note }}</p></div>
+      {% else %}<p class="empty">No shift handovers have been submitted.</p>{% endfor %}
+    </article>
+    <article class="card" id="handover-action-board">
+      <div class="card-head"><div><div class="eyebrow">SLA-PRIORITIZED · CROSS-SHIFT QUEUE</div><h2>Handover Action Board</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_handover_actions') }}">Export Actions CSV</a></div>
+      <p class="muted">Priority combines severity, time to due date, open age, and repeated open actions in the same site/category.</p>
+      <div class="report-kpis compliance-kpis"><article><span>OPEN</span><b>{{ open_action_count }}</b></article><article><span>OVERDUE</span><b class="text-danger">{{ overdue_action_count }}</b></article><article><span>CRITICAL</span><b class="text-danger">{{ critical_action_count }}</b></article><article><span>DUE ≤ 2H</span><b class="text-warning">{{ urgent_action_count }}</b></article><article><span>RESOLVED · 7D</span><b>{{ resolved_action_count }}</b></article></div>
+      <details class="handover-create-details"><summary>Create a site action</summary>
+        <form method="post" action="{{ url_for('manager_create_handover_action') }}" class="template-form action-create-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label>Client site<select name="site_id" required>{% for site in sites %}<option value="{{ site.id }}">{{ site.name }}</option>{% endfor %}</select></label>
+          <label>Action title<input name="title" maxlength="120" required></label>
+          <div class="compliance-date-grid"><label>Category<select name="category"><option value="safety">Safety</option><option value="equipment">Equipment</option><option value="client_request">Client request</option><option value="access">Access</option><option value="coverage">Coverage</option><option value="other">Other</option></select></label><label>Severity<select name="severity"><option value="medium">Medium · 24h</option><option value="low">Low · 72h</option><option value="high">High · 8h</option><option value="critical">Critical · 2h</option></select></label></div>
+          <label>Assign to (optional)<select name="assigned_to"><option value="">Leave unassigned</option>{% for worker in worker_options %}<option value="{{ worker.id }}">{{ worker.name }}</option>{% endfor %}</select></label>
+          <label>Details<textarea name="details" maxlength="1000" rows="2"></textarea></label><label>Due by (optional)<input type="datetime-local" name="due_at"></label>
+          <button class="btn secondary">Create Action</button>
+        </form>
+      </details>
+      {% for item in handover_actions %}
+        {% set action_class='red' if item.priority_band in ['Critical','High'] else ('amber' if item.priority_band=='Normal' else 'green') %}
+        <div class="handover-action-item"><div class="action-item-head"><div><b>{{ item.title }}</b><small>{{ item.site_name }} · {{ item.category|replace('_',' ')|title }} · {{ item.creator_name }}{% if item.assignee_name %} → {{ item.assignee_name }}{% else %} · Unassigned{% endif %}</small></div><span class="status-pill {{ action_class }}">{{ item.priority_band }} · {{ item.priority_score }}</span></div>
+          <p>{{ item.details or 'No extra details supplied.' }}</p><small class="action-priority-signals">{{ item.priority_signals|join(' · ') }} · Due {{ item.due_at|clock }}</small>{% if item.manager_note %}<p class="muted">Manager note: {{ item.manager_note }}</p>{% endif %}
+          <form method="post" action="{{ url_for('update_manager_handover_action',action_id=item.id) }}" class="action-manager-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><select name="assigned_to" aria-label="Assign action"><option value="">Unassigned</option>{% for worker in worker_options %}<option value="{{ worker.id }}" {% if item.assigned_to==worker.id %}selected{% endif %}>{{ worker.name }}</option>{% endfor %}</select><select name="status" aria-label="Action status">{% for status,label in [('open','Open'),('acknowledged','Acknowledged'),('in_progress','In progress'),('resolved','Resolved')] %}<option value="{{ status }}" {% if item.status==status %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><input name="manager_note" maxlength="500" value="{{ item.manager_note }}" placeholder="Manager note"><button class="btn secondary btn-sm">Update</button></form>
+        </div>
+      {% else %}<p class="empty">No open site handover actions.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="eyebrow">TEAM ENGAGEMENT</div><h2>Announcement Read Receipts</h2>
+      {% for item in announcements %}<div class="schedule-item"><span class="schedule-date">{{ item.read_count }}/{{ active_worker_count }}</span><div class="schedule-info"><b>{{ item.title }}</b><small>{{ item.created_at|clock }} · employees acknowledged</small></div></div>
+      {% else %}<p class="empty">No active announcements.</p>{% endfor %}
+    </article>
+  </section>
+
+  <!-- Compliance and site safety -->
+  <section class="section-heading" id="compliance-operations">
+    <div><div class="eyebrow">TRAINING & SITE SAFETY</div><h2>Compliance Operations</h2></div>
+    <p>Keep employee credentials current and review per-shift safety checks.</p>
+  </section>
+  <section class="tools-grid advanced-grid">
+    <article class="card">
+      <div class="card-head"><div><div class="eyebrow">CREDENTIAL REGISTER</div><h2>Add Employee Certification</h2></div><a class="btn secondary btn-sm" href="{{ url_for('export_certifications') }}">Export CSV</a></div>
+      <form method="post" action="{{ url_for('add_certification') }}" class="compliance-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Employee<select name="worker_id" required>{% for person in certification_workers %}<option value="{{ person.id }}">{{ person.name }}</option>{% endfor %}</select></label>
+        <label>Credential<input name="credential_name" maxlength="120" required placeholder="First Aid, Fire Safety, Trade License"></label>
+        <label>Issuing organization<input name="issuer" maxlength="120" required placeholder="Training provider or authority"></label>
+        <div class="compliance-date-grid"><label>Issued<input type="date" name="issued_on"></label><label>Expires<input type="date" name="expires_on"></label></div>
+        <label>Reference code<input name="reference_code" maxlength="120" placeholder="Optional certificate number"></label>
+        <label>Notes<textarea name="notes" maxlength="500" rows="2" placeholder="Optional verification note"></textarea></label>
+        <button class="btn primary">Save Credential</button>
+      </form>
+    </article>
+    <article class="card">
+      <div class="eyebrow">EXPIRY WATCH · NEXT 60 DAYS</div><h2>Credential Alerts</h2>
+      <p class="muted">{{ expired_cert_count }} expired credential(s) · {{ certification_alerts|length - expired_cert_count }} expiring soon.</p>
+      {% for item in certification_alerts %}
+      <div class="schedule-item"><span class="schedule-date {% if item.expires_on < today %}text-danger{% else %}text-warning{% endif %}">{{ 'Expired' if item.expires_on < today else item.expires_on }}</span><div class="schedule-info"><b>{{ item.worker_name }} · {{ item.credential_name }}</b><small>{{ item.issuer }}{% if item.employee_id %} · {{ item.employee_id }}{% endif %}</small></div></div>
+      {% else %}<p class="empty">No credentials are expired or due in the next 60 days.</p>{% endfor %}
+    </article>
+    <article class="card">
+      <div class="card-head"><div><div class="eyebrow">QUALIFICATION HISTORY</div><h2>Employee Credentials</h2></div></div>
+      <div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>CREDENTIAL</th><th>ISSUER</th><th>EXPIRES</th><th>STATUS</th></tr></thead><tbody>
+        {% for item in certification_records %}
+          {% set expired = item.expires_on and item.expires_on < today %}
+          {% set expiring = item.expires_on and item.expires_on >= today and item.expires_on <= certification_window %}
+          <tr><td><b>{{ item.worker_name }}</b><small class="table-sub">{{ item.employee_id or 'ID pending' }}</small></td><td>{{ item.credential_name }}</td><td>{{ item.issuer }}</td><td>{{ item.expires_on or 'No expiry' }}</td><td><span class="status-pill {% if expired %}red{% elif expiring %}amber{% else %}green{% endif %}">{{ 'Expired' if expired else ('Expiring' if expiring else ('Current' if item.expires_on else 'No expiry')) }}</span></td></tr>
+        {% else %}<tr><td colspan="5" class="empty">No employee credentials on file.</td></tr>{% endfor %}
+      </tbody></table></div>
+    </article>
+    <article class="card">
+      <div class="eyebrow">DAILY SAFETY COMPLIANCE</div><h2>On-Site Inspection Completion</h2>
+      <div class="report-kpis compliance-kpis">
+        <article><span>SHIFTS TODAY</span><b>{{ today_shift_count }}</b></article>
+        <article><span>CHECKS FILED</span><b>{{ today_check_count }}</b></article>
+        <article><span>COMPLETION</span><b>{{ checklist_rate }}%</b></article>
+        <article><span>FAILED CHECKS</span><b class="text-danger">{{ today_failed_check_count }}</b></article>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>WORKER / SITE</th><th>CHECKLIST</th><th>OBSERVATIONS</th><th>SUBMITTED</th></tr></thead><tbody>
+        {% for item in safety_checks %}
+          {% set failed = not item.ppe_ok or not item.hazards_ok or not item.equipment_ok or not item.emergency_ready %}
+          <tr><td><b>{{ item.worker_name }}</b><small class="table-sub">{{ item.site_name }}</small></td><td><span class="status-pill {% if failed %}red{% else %}green{% endif %}">{{ 'Needs review' if failed else 'Passed' }}</span></td><td>{{ item.observations or 'All items passed' }}</td><td>{{ item.completed_at|clock }}</td></tr>
+        {% else %}<tr><td colspan="4" class="empty">No site safety checks submitted today.</td></tr>{% endfor %}
+      </tbody></table></div>
+      <p class="muted" style="margin-top:10px">Failed items automatically create an incident in the Advanced Operations review queue.</p>
+    </article>
+  </section>
+
+  <!-- Section 5: Attendance Reports & Performance Analytics -->
+  <section class="card" id="attendance-reports" style="margin-top: 24px;">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">ANALYTICS & EXPORT</div>
+        <h2>Attendance Performance & Records</h2>
+      </div>
+    </div>
+    
+    <form method="get" class="roster-filters" style="margin-bottom: 20px;">
+      <label>From Date<input type="date" name="from" value="{{ report_from }}"></label>
+      <label>To Date<input type="date" name="to" value="{{ report_to }}"></label>
+      <button class="btn secondary">Update Report</button>
+      <a class="btn primary" href="{{ url_for('export_attendance',**{'from':report_from,'to':report_to}) }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Download CSV</span>
+      </a>
+    </form>
+
+    <!-- KPI Summary Tiles -->
+    <div class="report-kpis">
+      <article>
+        <span>TOTAL SHIFTS</span>
+        <b>{{ report_metrics.total_shifts or 0 }}</b>
+      </article>
+      <article>
+        <span>COMPLETED SHIFTS</span>
+        <b>{{ report_metrics.completed_shifts or 0 }}</b>
+      </article>
+      <article>
+        <span>NET RECORDED TIME</span>
+        <b>{{ (report_metrics.net_minutes|int // 60) }}h {{ (report_metrics.net_minutes|int % 60) }}m</b>
+      </article>
+      <article>
+        <span>LATE ARRIVALS</span>
+        <b style="color: var(--amber-600);">{{ report_metrics.late_arrivals or 0 }}</b>
+      </article>
+    </div>
+
+    <!-- Facility Completion Rate Performance Table -->
+    <div class="site-performance" style="margin-top: 28px;">
+      <h3 style="font-size: 16px; margin-bottom: 12px;">Client Facility Completion Performance</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>WORKPLACE</th>
+              <th>SHIFTS</th>
+              <th>COMPLETED</th>
+              <th>NET HOURS</th>
+              <th>COMPLETION RATE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for site in site_metrics %}
+            <tr>
+              <td><b>{{ site.site_name }}</b></td>
+              <td>{{ site.shifts }}</td>
+              <td>{{ site.completed_shifts }}</td>
+              <td>{{ site.net_minutes|int // 60 }}h {{ site.net_minutes|int % 60 }}m</td>
+              <td>
+                {% set comp_pct = ((site.completed_shifts / site.shifts) * 100)|round|int %}
+                <div class="completion-cell">
+                  <div class="completion-track" role="meter" aria-label="{{ site.site_name }} completion" aria-valuenow="{{ comp_pct }}" aria-valuemin="0" aria-valuemax="100">
+                    <span style="width: {{ comp_pct }}%;"></span>
+                  </div>
+                  <b>{{ comp_pct }}%</b>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="empty">No workplace activity in this date range.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detailed Shifts History Table -->
+    <div class="card-head" style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+      <div>
+        <div class="eyebrow">DETAILED AUDIT LOGS</div>
+        <h2>Attendance Shift History</h2>
+      </div>
+    </div>
+    
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>PERSONNEL</th>
+            <th>EMPLOYEE ID</th>
+            <th>FACILITY</th>
+            <th>ARRIVAL</th>
+            <th>DEPARTURE</th>
+            <th>NET WORKING TIME</th>
+            <th>VERIFICATION METHOD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in report_rows %}
+          <tr>
+            <td><b>{{ item.worker_name }}</b></td>
+            <td><span style="font-family: var(--font-mono);">{{ item.employee_id or '—' }}</span></td>
+            <td>{{ item.site_name }}</td>
+            <td>{{ item.check_in|clock }}</td>
+            <td>{{ item.check_out|clock }}</td>
+            <td>
+              {% if item.net_minutes is not none %}
+              <b>{{ (item.net_minutes|int)//60 }}h {{ (item.net_minutes|int)%60 }}m</b>
+              {% if item.net_minutes|int > 480 %}
+              <small class="table-sub" style="color: var(--indigo-600); font-weight: 700;">OT {{ ((item.net_minutes|int)-480)//60 }}h {{ ((item.net_minutes|int)-480)%60 }}m</small>
+              {% endif %}
+              {% else %}
+              <span class="status-pill green">Shift Open</span>
+              {% endif %}
+            </td>
+            <td><span class="source-tag">{{ item.source|replace('_',' ') }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="empty">No attendance records in this date range.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 6: Employee Directory -->
+  <section class="card employee-directory" id="employee-directory" style="margin-top: 24px;">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">PERSONNEL ROSTER</div>
+        <h2>Registered Employee Directory</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="site-radius">{{ workers|length }} Active Profiles</span><a class="btn secondary btn-sm" href="{{ url_for('export_workers') }}">Export Workforce CSV</a></div>
+    </div>
+    
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>PHOTO</th>
+            <th>EMPLOYEE ID</th>
+            <th>NAME</th>
+            <th>ALLOTTED WORKPLACE</th>
+            <th>AGE / GENDER</th>
+            <th>DESIGNATION</th>
+            <th>RECORD DETAILS</th>
+            <th>ACCOUNT STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for worker in workers %}
+          <tr>
+            <td>
+              {% if worker.has_photo %}
+              <img class="employee-photo" src="{{ url_for('employee_photo',user_id=worker.id) }}" alt="Photo for {{ worker.name }}">
+              {% else %}
+              <span class="avatar small">{{ worker.name[:1] }}</span>
+              {% endif %}
+            </td>
+            <td><span style="font-family: var(--font-mono); font-weight: 700;">{{ worker.employee_id or '—' }}</span></td>
+            <td><b>{{ worker.name }}</b></td>
+            <td>
+              <b>{{ worker.assigned_site or 'Unallotted' }}</b>
+              {% if worker.assigned_address %}
+              <small class="table-sub">{{ worker.assigned_address }}</small>
+              {% endif %}
+            </td>
+            <td>{{ worker.age or '—' }} · {{ (worker.gender or '—')|replace('_',' ')|title }}</td>
+            <td><b>{{ worker.post or '—' }}</b></td>
+            <td>
+              <details>
+                <summary>View Record</summary>
+                <div class="profile-details">
+                  <b>Permanent:</b> <span>{{ worker.permanent_address or '—' }}</span>
+                  <b>Local:</b> <span>{{ worker.communication_address or '—' }}</span>
+                  <b>Experience:</b> <span>{{ worker.work_experience or '—' }}</span>
+                  <b>Face Match:</b> <span>{{ 'Consented' if worker.face_consent else 'Not Enrolled' }}</span>
+                  <b>Username:</b> <span>{{ worker.username }}</span>
+                </div>
+              </details>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('toggle_worker',user_id=worker.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="text-button" style="color: {% if worker.active %}var(--rose-600){% else %}var(--emerald-600){% endif %};">
+                  {{ 'Deactivate' if worker.active else 'Reactivate' }}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="empty">No employee profiles registered yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 7: Audit Activity History Log -->
+  <section class="card" id="audit-history" style="margin-top: 24px;">
+    <div class="eyebrow">SYSTEM SECURITY AUDIT TRAIL</div>
+    <h2>Administrative Change History</h2>
+    <div style="margin-top: 14px; max-height: 320px; overflow-y: auto;">
+      {% for item in audit_rows %}
+      <div style="padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 12px; display: flex; justify-content: space-between;">
+        <span>
+          <b>{{ item.actor_name or 'System' }}</b>:
+          <span style="color: var(--slate-700);">{{ item.action }} {{ item.entity }} {{ item.details }}</span>
+        </span>
+        <span style="font-family: var(--font-mono); color: var(--slate-400);">{{ item.created_at|clock }}</span>
+      </div>
+      {% else %}
+      <p class="muted" style="text-align: center; padding: 24px 0;">No administrative change history logged.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<!-- Manager Live Camera Dialog for Employee Enrollment -->
+<dialog class="reg-camera-dialog" id="reg-camera-dialog" aria-labelledby="reg-cam-title">
+  <div class="reg-camera-dialog-inner">
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow" style="color: var(--emerald-400);">PERSONNEL BIOMETRIC ENROLLMENT</div>
+        <h2 id="reg-cam-title" style="color: #fff; margin: 2px 0;">Take Live Employee Portrait</h2>
+      </div>
+      <button type="button" class="modal-close-btn" id="reg-cam-close" aria-label="Close dialog">✕</button>
+    </div>
+
+    <div class="camera-viewport-wrap">
+      <video id="reg-cam-video" autoplay playsinline muted></video>
+      <canvas id="reg-cam-canvas" style="display: none;"></canvas>
+      
+      <!-- Biometric Face Oval Reticle Overlay -->
+      <div class="face-target-reticle">
+        <div class="reticle-oval">
+          <div class="reticle-crosshair-h"></div>
+          <div class="reticle-crosshair-v"></div>
+        </div>
+        <div class="reticle-corner top-left"></div>
+        <div class="reticle-corner top-right"></div>
+        <div class="reticle-corner bottom-left"></div>
+        <div class="reticle-corner bottom-right"></div>
+      </div>
+
+      <!-- Live Sensor Telemetry Badge -->
+      <div class="camera-telemetry-hud">
+        <span class="hud-status-badge green"><i></i> Camera Online</span>
+        <span id="reg-cam-lighting" class="hud-status-badge">Lighting: Optimal</span>
+      </div>
+    </div>
+
+    <div class="camera-instruction-bar">
+      <span>💡 Ask employee to look directly into the camera lens with neutral lighting.</span>
+    </div>
+
+    <div class="reg-cam-actions">
+      <button type="button" class="btn secondary" id="reg-cam-switch" title="Switch front/back camera">
+        <span>🔄 Switch Camera</span>
+      </button>
+      <button type="button" class="btn primary" id="reg-cam-capture" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 800; padding: 0 28px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);">
+        <span>📸 Capture Photo</span>
+      </button>
+      <button type="button" class="btn secondary" id="reg-cam-cancel">Cancel</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Public Cloudflare Tunnel & Mobile QR Code Modal -->
+<dialog class="qr-share-dialog" id="qr-share-modal" aria-labelledby="qr-modal-title">
+  <div class="qr-dialog-inner">
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow" style="color: var(--emerald-600);">REMOTE WORKFORCE ACCESS</div>
+        <h2 id="qr-modal-title" style="margin: 2px 0;">Mobile Device Access Hub</h2>
+      </div>
+      <button type="button" class="modal-close-btn" id="qr-modal-close">✕</button>
+    </div>
+    
+    <p class="muted" style="font-size: 13px; margin-bottom: 16px;">Scan this QR code with any mobile smartphone camera to open the live portal with full camera biometrics and GPS tracking enabled.</p>
+    
+    <div class="qr-display-card" style="display: flex; flex-direction: column; align-items: center; gap: 14px; background: var(--slate-50); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+      <img id="public-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fsticks-unless-dog-treatment.trycloudflare.com" alt="Mobile Access QR Code" style="width: 200px; height: 200px; border-radius: 8px; border: 1px solid var(--border-light); background: #fff; padding: 8px;">
+      <div class="qr-url-copy" style="display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center;">
+        <code id="public-tunnel-url" style="font-size: 11px; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-subtle); color: var(--emerald-700); font-weight: 700;">https://sticks-unless-dog-treatment.trycloudflare.com</code>
+        <button type="button" class="btn secondary btn-sm" id="btn-copy-tunnel-url">Copy URL 📋</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 14px; font-size: 12px; color: var(--slate-500); text-align: center;">
+      🔒 Encrypted HTTPS Tunnel active · Cloudflare Edge Network · Works on iOS & Android
+    </div>
+  </div>
+</dialog>
+
+<script>
+  window.FG = { manager: true };
+</script>
+{% endblock %}

@@ -1,0 +1,689 @@
+{% extends 'base.html' %}
+{% block title %}My Field Workday{% endblock %}
+{% block heading %}Field Workforce Console{% endblock %}
+{% block content %}
+<section class="welcome-row">
+  <div>
+    <div class="eyebrow">
+      <span>WORKFORCE FIELD HUB</span>
+      <span class="eyebrow-dot">•</span>
+      <span>SHIFT ATTENDANCE</span>
+    </div>
+    <h1 style="font-size: 28px; margin: 4px 0 8px;">
+      Hello, {{ g.user.name.split(' ')[0] }}
+      <span style="font-size: 20px; vertical-align: middle; color: var(--emerald-500);">👋</span>
+    </h1>
+    <p class="muted">Mark your verified attendance upon reaching the site perimeter. Location status is actively monitored for your safety.</p>
+  </div>
+  
+  <div class="date-chip">
+    <span class="today-label">TODAY'S DATE</span>
+    <span id="today"></span>
+  </div>
+</section>
+
+<!-- Site Safety & Mandatory PPE Readiness Advisory Banner -->
+<section class="safety-advisory-banner" style="background: linear-gradient(135deg, #06110f 0%, #0d2220 100%); border-radius: var(--radius-lg); padding: 14px 22px; border: 1px solid rgba(16, 185, 129, 0.35); color: #fff; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <div style="width: 42px; height: 42px; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); display: grid; place-items: center; font-size: 22px; flex-shrink: 0;">
+      🛡️
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <b style="font-size: 13.5px; letter-spacing: 0.3px;">Mandatory Industrial Safety & PPE Protocol Active</b>
+        <span class="status-pill green" style="font-size: 10px; padding: 2px 8px;">SAFETY COMPLIANCE</span>
+      </div>
+      <p style="margin: 2px 0 0; font-size: 12px; color: #94a3b8;">
+        Equip approved gear before perimeter entry:
+        <span style="color: #6ee7b7; font-weight: 700;">⛑️ Hard Hat · 🦺 Reflective Vest · 🥾 Steel-Toe Boots</span>
+      </p>
+    </div>
+  </div>
+  <div style="display: flex; gap: 8px;">
+    <button type="button" class="btn secondary btn-sm" id="btn-open-id-badge" style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); color: #fff; min-height: 38px; font-size: 12px; padding: 0 16px;">
+      🪪 Digital Employee ID Badge
+    </button>
+  </div>
+</section>
+
+<!-- Main Attendance & Workplace Radar Grid -->
+<section class="worker-grid" id="my-attendance">
+  <!-- Left Column: Primary Shift Console Card -->
+  <article class="card shift-card">
+    <div class="card-head">
+      <div>
+        <div class="eyebrow">ATTENDANCE VERIFICATION</div>
+        <h2>{% if active %}Shift Currently Active{% else %}Ready for Check-In{% endif %}</h2>
+      </div>
+      <span class="status-pill {% if active %}green{% else %}gray{% endif %}">
+        <i></i>
+        {% if active %}ON DUTY{% else %}NOT CHECKED IN{% endif %}
+      </span>
+    </div>
+
+    {% if face_enrolled %}
+    <div class="tracking-note" style="border-left: 3px solid var(--emerald-500); margin-bottom: 12px;">
+      <span>📸</span>
+      <div>
+        <b>1:1 Biometric Face Match Active</b>
+        <small>Optical verification compares live camera against registered portrait at check-in & check-out.</small>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if active %}
+      <!-- Active Shift Controller -->
+      <div class="shift-detail">
+        <div class="site-symbol">🏢</div>
+        <div style="flex: 1;">
+          <b>{{ active.site_name }}</b>
+          <span>Started at {{ active.check_in|clock }} <span class="source-tag">{{ active.source|replace('_',' ') }}</span></span>
+          <div class="shift-timer-display" id="shift-timer" data-start="{{ active.check_in }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="shift-timer-text">Active Shift Running</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Shift Earnings & Overtime Counter -->
+      <div class="live-wage-box" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #a7f3d0; border-radius: var(--radius-md); padding: 12px 16px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 10px; font-weight: 800; color: #047857; letter-spacing: 0.5px; display: block;">LIVE SHIFT EARNINGS ACCUMULATOR</span>
+          <b id="live-wage-display" style="font-size: 18px; color: #065f46; font-family: var(--font-display);">₹ 0.00</b>
+          <small style="display: block; font-size: 10.5px; color: #059669;">Base ₹75/hr · 1.5x Overtime (>8h)</small>
+        </div>
+        <div style="text-align: right;">
+          <span class="status-pill green" style="font-size: 10px;">BILLABLE TICKER</span>
+          <small id="live-net-hours" style="display: block; font-size: 11px; color: #047857; font-weight: 700; margin-top: 4px;">0h 0m worked</small>
+        </div>
+      </div>
+
+      <div class="tracking-note">
+        <span>🛡️</span>
+        <div>
+          <b>Site Safety Boundary Monitored</b>
+          <small>Keep this page active. If your device departs the designated workplace radius, your supervisor will be alerted immediately.</small>
+        </div>
+      </div>
+
+      <div class="shift-actions">
+        <button class="btn secondary" type="button" data-break="{{ 'end' if active_break else 'start' }}">
+          <span>{{ '☕ Resume Shift' if active_break else '⏸️ Take Break' }}</span>
+        </button>
+        <button class="btn danger" type="button" data-sos title="Send immediate emergency alert to supervisor">
+          <span>🚨 Request Urgent SOS</span>
+        </button>
+      </div>
+
+      <button class="btn secondary full" data-checkout type="button" style="border-color: #fca5a5; color: var(--rose-700); background: #fff5f5; margin-top: 6px;">
+        <span>Finish Shift & Check Out (Biometric Scan)</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+      
+      <div class="location-line" id="location-state">Verifying GPS boundary coordinates…</div>
+      <form method="post" action="{{ url_for('submit_handover') }}" class="worker-form handover-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Shift handover note<textarea name="note" maxlength="1500" rows="3" placeholder="Record unfinished work, hazards, or the next shift's priorities" required>{{ active_handover.note if active_handover else '' }}</textarea></label>
+        <button class="btn secondary" type="submit">Save Handover for Manager</button>
+      </form>
+      <div class="handover-form">
+        <div><div class="eyebrow">ON-SITE SAFETY CHECK</div><h3>Shift Safety Inspection</h3></div>
+        {% if active_checklist %}
+          {% set check_failed = not active_checklist.ppe_ok or not active_checklist.hazards_ok or not active_checklist.equipment_ok or not active_checklist.emergency_ready %}
+          <span class="status-pill {% if check_failed %}red{% else %}green{% endif %}">{{ 'Manager review requested' if check_failed else 'All checks passed' }}</span>
+          {% if active_checklist.observations %}<p class="muted">{{ active_checklist.observations }}</p>{% endif %}
+        {% else %}
+        <form method="post" action="{{ url_for('submit_safety_checklist') }}" class="worker-form safety-check-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% for key,label in [('ppe_ok','PPE is available and in good condition'),('hazards_ok','Work area hazards have been checked'),('equipment_ok','Tools and equipment are safe to use'),('emergency_ready','Emergency route and help are known')] %}
+          <label>{{ label }}<select name="{{ key }}" required><option value="">Choose Yes or No</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+          {% endfor %}
+          <label>Observations (required if any answer is No)<textarea name="observations" maxlength="1000" rows="2" placeholder="Describe any issue found"></textarea></label>
+          <button class="btn primary" type="submit">Submit Safety Check</button>
+        </form>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <!-- Ready to Check In -->
+      <p class="muted" style="margin-bottom: 12px;">Your shift check-in is verified against the industrial coordinates assigned to your employee profile.</p>
+
+      {% if assigned_site %}
+      <div class="assigned-workplace">
+        <div class="assigned-workplace-icon">📍</div>
+        <div>
+          <span>ASSIGNED CLIENT WORKPLACE</span>
+          <b>{{ assigned_site.name }}</b>
+          <small>{{ assigned_site.address }}</small>
+        </div>
+      </div>
+
+      <label class="field-label assigned-location" style="margin-top: 12px;">
+        CONFIRMED LOCATION
+        <select id="site-select" required disabled style="font-weight: 700; color: var(--slate-900);">
+          <option value="{{ assigned_site.id }}" data-map="{{ assigned_site.map_url or '' }}" data-address="{{ assigned_site.address }}" data-name="{{ assigned_site.name }}" selected>
+            {{ assigned_site.name }}
+          </option>
+        </select>
+        <small class="field-note">Attendance is strictly restricted to this facility entrance.</small>
+      </label>
+      {% else %}
+      <div class="flash error" style="margin-top: 0;">
+        <b>No client workplace assigned.</b> Please ask your supervisor to assign your facility.
+      </div>
+      {% endif %}
+
+      <div class="site-hint">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+        <span>Stand near the site entrance to ensure accurate satellite GPS location.</span>
+      </div>
+
+      <button class="btn primary full" data-checkin {% if not sites %}disabled{% endif %} type="button" style="min-height: 48px; font-size: 14.5px; font-weight: 800;">
+        <span>Verify Face & Check In at Site</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+      
+      <div class="location-line" id="location-state">Allow location & camera access when prompted by your browser.</div>
+
+      {% if not face_enrolled and not has_biometrics %}
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-light);">
+        <small style="color: var(--slate-500); display: block; margin-bottom: 6px;">Alternative Security:</small>
+        <button class="text-button" data-biometric-register type="button" style="font-size: 12px;">
+          🔐 Enroll Optional Phone Hardware Passkey
+        </button>
+      </div>
+      {% endif %}
+    {% endif %}
+  </article>
+
+  <!-- Right Column: Precision Live GPS Map & Geofence Perimeter -->
+  {% set workplace = assigned_site or active %}
+  <article class="card site-card">
+    <div class="card-head" style="margin-bottom: 10px;">
+      <div>
+        <div class="eyebrow">PRECISION SATELLITE GEOFENCE</div>
+        <h2 id="workplace-name" style="margin: 4px 0 2px;">{{ workplace.name if assigned_site else (workplace.site_name if workplace else 'Workplace Boundary') }}</h2>
+        <p class="muted" id="workplace-address">{{ workplace.address if workplace else 'Awaiting workplace allotment by manager.' }}</p>
+      </div>
+      <span class="site-radius" id="map-radius-badge">{{ workplace.radius_m if workplace else 250 }}m Radius</span>
+    </div>
+    
+    <!-- Precision Live Leaflet Map Container -->
+    <div class="precision-map-wrapper">
+      <div id="worker-live-map" class="precision-map-container"
+           data-site-lat="{{ workplace.latitude if workplace else '26.2726962' }}"
+           data-site-lng="{{ workplace.longitude if workplace else '78.1364943' }}"
+           data-site-radius="{{ workplace.radius_m if workplace else '250' }}"
+           data-site-name="{{ workplace.name if assigned_site else (workplace.site_name if workplace else 'Industrial Facility') }}">
+      </div>
+      
+      <!-- Live Real-Time Telemetry HUD Overlay -->
+      <div class="map-hud-bar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="status-pill gray" id="map-boundary-hud">
+            <i></i> <span id="map-boundary-text">Acquiring GPS…</span>
+          </span>
+          <span id="map-distance-hud" style="font-family: var(--font-mono); font-size: 11px; color: #cbd5e1;">-- m from gate</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="map-quick-btn" id="btn-recenter-user" title="Center map on your current GPS location">
+            <span>🎯 My Device</span>
+          </button>
+          <button type="button" class="map-quick-btn" id="btn-center-site" title="Center map on facility entrance">
+            <span>🏢 Facility</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+      <a class="map-link" id="workplace-map" href="{{ workplace.map_url if workplace else '#' }}" target="_blank" rel="noopener">
+        <span>View Coordinates on Google Maps</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+      <span style="font-size: 11px; font-weight: 700; color: var(--emerald-700);">OpenStreetMap Precision Layer</span>
+    </div>
+    
+    <div class="privacy-line">
+      <span>🔒</span>
+      <span>Live distance calculated with sub-meter Haversine accuracy. Geofence enforced server-side.</span>
+    </div>
+  </article>
+</section>
+
+<!-- Planning, Leave & Team Notices Grid -->
+<section class="tools-grid advanced-grid" id="worker-planning" style="margin-top: 24px;">
+  <!-- Schedule Card -->
+  <article class="card">
+    <div class="eyebrow">UPCOMING SHIFTS</div>
+    <h2>Assigned Schedule</h2>
+    <div style="margin-top: 14px;">
+      {% for sh in schedules %}
+      <div class="schedule-item">
+        <span class="schedule-date">{{ sh.work_date }}</span>
+        <div class="schedule-info">
+          <b>{{ sh.site_name }}</b>
+          <small>{{ sh.start_time }} &ndash; {{ sh.end_time }}</small>
+          <span class="status-pill {% if sh.confirmation_status=='confirmed' %}green{% elif sh.confirmation_status=='declined' %}red{% else %}amber{% endif %}">{{ sh.confirmation_status|title }}</span>
+          {% if sh.confirmation_status=='pending' %}
+          <div class="worker-response-actions">
+            <form method="post" action="{{ url_for('respond_to_schedule',schedule_id=sh.id,response='confirm') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn secondary btn-sm">Confirm Shift</button></form>
+            <details><summary>Decline</summary><form method="post" action="{{ url_for('respond_to_schedule',schedule_id=sh.id,response='decline') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="worker_note" maxlength="300" placeholder="Reason for declining" required><button class="text-button text-danger">Send Decline</button></form></details>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      <p class="muted" style="text-align: center; padding: 24px 0;">No upcoming shift schedule allotted.</p>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="card" id="handover-actions">
+    <div class="eyebrow">SHIFT CONTINUITY</div><h2>Site Handover Actions</h2>
+    <p class="muted">Open items carry across shifts at this workplace. Critical, high, and overdue items are prioritized for manager review.</p>
+    {% if active %}
+    <form method="post" action="{{ url_for('create_handover_action') }}" class="template-form action-create-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Action title<input name="title" maxlength="120" required placeholder="Replace damaged entrance light"></label>
+      <div class="compliance-date-grid"><label>Category<select name="category"><option value="safety">Safety</option><option value="equipment">Equipment</option><option value="client_request">Client request</option><option value="access">Access</option><option value="coverage">Coverage</option><option value="other">Other</option></select></label><label>Severity<select name="severity"><option value="medium">Medium · 24h SLA</option><option value="low">Low · 72h SLA</option><option value="high">High · 8h SLA</option><option value="critical">Critical · 2h SLA</option></select></label></div>
+      <label>Details<textarea name="details" maxlength="1000" rows="2" placeholder="What needs follow-up on the next shift?"></textarea></label>
+      <label>Due by (optional)<input type="datetime-local" name="due_at"></label>
+      <button class="btn secondary">Add Handover Action</button>
+    </form>
+    {% endif %}
+    {% for item in worker_handover_actions %}
+    <div class="handover-action-item"><div class="action-item-head"><b>{{ item.title }}</b><span class="status-pill {% if item.severity in ['critical','high'] %}red{% elif item.severity=='medium' %}amber{% else %}gray{% endif %}">{{ item.severity|title }}</span></div><small>{{ item.site_name }} · {{ item.category|replace('_',' ')|title }} · Due {{ item.due_at|clock }}{% if item.assignee_name %} · Assigned to {{ item.assignee_name }}{% else %} · Unassigned{% endif %}</small>{% if item.details %}<p>{{ item.details }}</p>{% endif %}
+      <div class="action-worker-buttons">{% if item.status=='open' %}<form method="post" action="{{ url_for('update_worker_handover_action',action_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="acknowledged"><button class="text-button">Acknowledge</button></form>{% endif %}{% if item.status in ['open','acknowledged'] %}<form method="post" action="{{ url_for('update_worker_handover_action',action_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="in_progress"><button class="text-button">Start work</button></form>{% endif %}<form method="post" action="{{ url_for('update_worker_handover_action',action_id=item.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="status" value="resolved"><button class="text-button text-success">Mark resolved</button></form></div>
+    </div>
+    {% else %}<p class="empty">No open handover actions for this site.</p>{% endfor %}
+  </article>
+
+  <article class="card">
+    <div class="eyebrow">SCHEDULING PREFERENCES</div><h2>Weekly Availability</h2>
+    <p class="muted">Choose the weekdays and hours when you can normally work. Managers will use this to check future assignments.</p>
+    <form method="post" action="{{ url_for('save_worker_availability') }}" class="availability-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="weekday-picks">
+        {% for day,label in [(0,'Monday'),(1,'Tuesday'),(2,'Wednesday'),(3,'Thursday'),(4,'Friday'),(5,'Saturday'),(6,'Sunday')] %}
+        <label><input type="checkbox" name="weekdays" value="{{ day }}" {% if weekday_availability.get(day) %}checked{% endif %}><span>{{ label }}</span></label>
+        {% endfor %}
+      </div>
+      {% set first_availability = (weekday_availability.values()|list|first) if weekday_availability else none %}
+      <div class="compliance-date-grid"><label>Available from<input type="time" name="start_time" value="{{ first_availability.start_time if first_availability else '08:00' }}"></label><label>Available until<input type="time" name="end_time" value="{{ first_availability.end_time if first_availability else '17:00' }}"></label></div>
+      <button class="btn secondary">Save Weekly Availability</button>
+    </form>
+  </article>
+
+  <!-- Leave Request Card -->
+  <article class="card">
+    <div class="eyebrow">TIME OFF ADMINISTRATION</div>
+    <h2>Request Leave</h2>
+    <form method="post" action="{{ url_for('request_leave') }}" class="worker-form" style="margin-top: 14px; display: grid; gap: 10px;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <label>From Date<input type="date" name="start_date" required></label>
+        <label>To Date<input type="date" name="end_date" required></label>
+      </div>
+      <label>Reason for Leave<textarea name="reason" maxlength="500" placeholder="Specify reason for time off request" rows="2" required></textarea></label>
+      <button class="btn secondary" style="justify-content: center;">Submit Leave Request</button>
+    </form>
+    
+    {% if leave_requests %}
+    <div style="margin-top: 16px; border-top: 1px solid var(--border-light); padding-top: 12px;">
+      <div class="eyebrow" style="font-size: 9px; margin-bottom: 8px;">RECENT REQUESTS</div>
+      {% for item in leave_requests %}
+      <div class="request-item" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); font-size: 12px;">
+        <span>{{ item.start_date }} &ndash; {{ item.end_date }}</span>
+        <span class="status-pill {% if item.status == 'approved' %}green{% elif item.status == 'declined' %}red{% else %}amber{% endif %}">
+          {{ item.status|title }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </article>
+
+  <!-- Shift transfer request and incident reporting -->
+  <article class="card">
+    <div class="eyebrow">SCHEDULE COORDINATION</div>
+    <h2>Request a Shift Transfer</h2>
+    <form method="post" action="{{ url_for('request_shift_transfer') }}" class="worker-form" style="display:grid;gap:10px;margin-top:14px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Upcoming shift
+        <select name="schedule_id" required {% if not transfer_schedules %}disabled{% endif %}>
+          {% for sh in transfer_schedules %}<option value="{{ sh.id }}">{{ sh.work_date }} · {{ sh.site_name }} · {{ sh.start_time }}–{{ sh.end_time }}</option>{% else %}<option value="">No upcoming shifts available</option>{% endfor %}
+        </select>
+      </label>
+      <label>Coworker to cover
+        <select name="target_worker_id" required {% if not swap_targets %}disabled{% endif %}>
+          {% for person in swap_targets %}<option value="{{ person.id }}">{{ person.name }}</option>{% else %}<option value="">No eligible coworkers</option>{% endfor %}
+        </select>
+      </label>
+      <label>Reason<textarea name="reason" maxlength="500" rows="2" required placeholder="Why do you need to transfer this shift?"></textarea></label>
+      <button class="btn secondary" {% if not transfer_schedules or not swap_targets %}disabled{% endif %}>Send for Manager Approval</button>
+    </form>
+    {% for item in transfer_requests %}<div class="schedule-item"><span class="schedule-date">{{ item.status|title }}</span><div class="schedule-info"><b>{{ item.work_date }} · {{ item.site_name }}</b><small>Requested cover: {{ item.target_name }}</small></div></div>{% endfor %}
+  </article>
+
+  <article class="card">
+    <div class="eyebrow">FIELD SAFETY</div>
+    <h2>Report a Safety Incident</h2>
+    {% if active %}
+    <form method="post" action="{{ url_for('report_safety_incident') }}" class="worker-form" style="display:grid;gap:10px;margin-top:14px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Incident type<input name="category" maxlength="80" placeholder="Equipment, injury, hazard…" required></label>
+      <label>Severity<select name="severity" required><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical / immediate danger</option></select></label>
+      <label>What happened?<textarea name="details" maxlength="2000" rows="3" required placeholder="Describe the location and situation"></textarea></label>
+      <button class="btn danger">Send Incident Report</button>
+    </form>
+    {% else %}<p class="muted">Start a shift to file a site incident report.</p>{% endif %}
+    {% for item in incident_history %}<div class="schedule-item"><span class="schedule-date">{{ item.status|title }}</span><div class="schedule-info"><b>{{ item.severity|upper }} · {{ item.category }}</b><small>{{ item.site_name }} · {{ item.created_at|clock }}</small></div></div>{% endfor %}
+  </article>
+
+  <article class="card">
+    <div class="eyebrow">TRAINING & QUALIFICATIONS</div><h2>My Certifications</h2>
+    {% for item in worker_certifications %}
+      {% set is_expired = item.expires_on and item.expires_on < today|string %}
+      <div class="schedule-item"><span class="schedule-date {% if is_expired %}text-danger{% endif %}">{{ 'Expired' if is_expired else ('No expiry' if not item.expires_on else item.expires_on) }}</span><div class="schedule-info"><b>{{ item.credential_name }}</b><small>{{ item.issuer }}{% if item.reference_code %} · {{ item.reference_code }}{% endif %}</small></div></div>
+    {% else %}<p class="muted">No training credentials are on file yet.</p>{% endfor %}
+  </article>
+
+  <article class="card">
+    <div class="eyebrow">SAFETY HISTORY</div><h2>Recent Site Checks</h2>
+    {% for item in checklist_history %}
+      {% set check_failed = not item.ppe_ok or not item.hazards_ok or not item.equipment_ok or not item.emergency_ready %}
+      <div class="schedule-item"><span class="schedule-date">{{ 'Review' if check_failed else 'Passed' }}</span><div class="schedule-info"><b>{{ item.site_name }}</b><small>{{ item.completed_at|clock }}</small></div></div>
+    {% else %}<p class="muted">Completed safety inspections will appear here.</p>{% endfor %}
+  </article>
+
+  <!-- Announcements Card -->
+  <article class="card" style="grid-column: span 2;">
+    <div class="eyebrow">TEAM COMMUNICATIONS</div>
+    <h2>Supervisor Announcements</h2>
+    <div style="margin-top: 14px;">
+      {% for item in announcements %}
+      <div class="announcement">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <h3>{{ item.title }}</h3>
+          <small class="table-sub">{{ item.created_at|clock }}</small>
+        </div>
+        <p>{{ item.body }}</p>
+        {% if not item.is_read %}
+        <form method="post" action="{{ url_for('mark_announcement_read',announcement_id=item.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="text-button">Mark as Read ✓</button>
+        </form>
+        {% else %}
+        <span class="source-tag">Read</span>
+        {% endif %}
+      </div>
+      {% else %}
+      <p class="muted" style="text-align: center; padding: 24px 0;">No active team announcements at this time.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<!-- Attendance History Log -->
+<section class="card" id="attendance-history" style="margin-top: 24px;">
+  <div class="card-head">
+    <div>
+      <div class="eyebrow">ATTENDANCE LOG</div>
+      <h2>My Shift Attendance Records</h2>
+    </div>
+  </div>
+  
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>FACILITY & DATE</th>
+          <th>CHECK IN</th>
+          <th>CHECK OUT</th>
+          <th>RECORD SOURCE</th>
+          <th>ATTENDANCE CORRECTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in attendance_history %}
+        <tr>
+          <td>
+            <b>{{ item.site_name }}</b>
+            <small class="table-sub">{{ item.check_in|clock }}</small>
+          </td>
+          <td>{{ item.check_in|clock }}</td>
+          <td>{{ item.check_out|clock }}</td>
+          <td><span class="source-tag">{{ item.source|replace('_',' ') }}</span></td>
+          <td>
+            <details>
+              <summary style="font-weight: 700; color: var(--emerald-700); cursor: pointer; font-size: 11.5px;">Request Correction</summary>
+              <form method="post" action="{{ url_for('request_correction') }}" style="margin-top: 10px; display: grid; gap: 8px; background: var(--slate-50); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="attendance_id" value="{{ item.id }}">
+                <label>Requested Check In<input type="datetime-local" name="check_in" required></label>
+                <label>Requested Check Out<input type="datetime-local" name="check_out" value="{{ item.check_out|localinput }}" {% if item.check_out %}required{% endif %}></label>
+                <label>Reason for Correction<input name="reason" maxlength="500" placeholder="Explain discrepancy" required></label>
+                <button class="btn secondary" style="justify-content: center; min-height: 36px;">Submit for Review</button>
+              </form>
+            </details>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 32px 16px; color: var(--slate-500);">
+            Your completed shift records will appear here.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Enhanced Biometric Face Verification Scanner Dialog -->
+<dialog class="face-dialog" id="face-check-dialog" aria-labelledby="face-check-title">
+  <div class="face-dialog-inner">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+      <div>
+        <div class="eyebrow" style="color: var(--emerald-400);">1:1 OPTICAL BIOMETRIC AUTHENTICATION</div>
+        <h2 id="face-check-title" style="color: #fff; margin: 2px 0 0;">Scan Face for Verification</h2>
+      </div>
+      <button type="button" class="modal-close-btn" data-face-cancel aria-label="Cancel verification">✕</button>
+    </div>
+    
+    <p style="color: #94a3b8; font-size: 12.5px; margin-bottom: 12px;">Center your face inside the glowing oval reticle in normal ambient lighting. Verification compares against your manager-registered portrait.</p>
+    
+    <div class="camera-viewport-wrap">
+      <video id="face-camera" autoplay muted playsinline></video>
+      
+      <!-- Biometric Scanner Reticle with Laser Sweep -->
+      <div class="face-target-reticle active-scanning">
+        <div class="scanner-laser"></div>
+        <div class="reticle-oval">
+          <div class="reticle-crosshair-h"></div>
+          <div class="reticle-crosshair-v"></div>
+        </div>
+        <div class="reticle-corner top-left"></div>
+        <div class="reticle-corner top-right"></div>
+        <div class="reticle-corner bottom-left"></div>
+        <div class="reticle-corner bottom-right"></div>
+      </div>
+
+      <!-- Real-Time Telemetry Badges -->
+      <div class="camera-telemetry-hud">
+        <span class="hud-status-badge green"><i></i> Liveness Active</span>
+        <span id="face-lighting-hud" class="hud-status-badge">Lighting: Optimal</span>
+      </div>
+    </div>
+
+    <!-- Live Telemetry Status Line -->
+    <div class="location-line" data-face-status aria-live="polite" style="margin: 10px 0 14px; text-align: center; font-weight: 600;">
+      Position face inside reticle and hold steady…
+    </div>
+
+    <!-- Match Confidence Result Pill (shown upon match) -->
+    <div id="face-confidence-pill" style="display: none; align-items: center; justify-content: center; gap: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; padding: 8px; border-radius: var(--radius-md); font-weight: 700; margin-bottom: 12px; font-size: 13px;">
+      <span>✓</span> <span id="face-confidence-text">Face Matched: 98.4% Confidence</span>
+    </div>
+
+    <div class="face-dialog-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn secondary" data-face-cancel>Cancel</button>
+      <button type="button" class="btn primary" data-face-capture style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 800; padding: 0 24px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);">
+        <span>Verify Face Identity</span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Digital Biometric Employee ID Badge Modal -->
+<dialog class="id-badge-dialog" id="id-badge-dialog" aria-labelledby="id-badge-title">
+  <div class="id-badge-inner">
+    <div class="badge-head">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="badge-org-chip">CHAUHAN MAN POWER SUPPLY</span>
+        <button type="button" class="modal-close-btn" id="btn-close-id-badge" style="color: #fff;">✕</button>
+      </div>
+      <h3 id="id-badge-title" style="margin: 6px 0 2px; color: #fff; font-size: 15px; letter-spacing: 0.5px;">INDUSTRIAL SECURITY CLEARANCE</h3>
+    </div>
+
+    <div class="badge-body">
+      <div class="badge-photo-wrapper">
+        <img class="badge-photo" src="{{ url_for('worker_own_photo') }}" alt="Profile Photo" onerror="this.src='https://ui-avatars.com/api/?name={{ g.user.name }}&background=10b981&color=fff&size=200'">
+        <span class="badge-verified-seal">🛡️ BIOMETRIC ENROLLED</span>
+      </div>
+
+      <div class="badge-details">
+        <h2 class="badge-name">{{ g.user.name }}</h2>
+        <span class="badge-post">{{ profile.post if profile else 'Site Safety Supervisor' }}</span>
+        
+        <div class="badge-meta-grid">
+          <div>
+            <span class="badge-meta-lbl">EMPLOYEE ID</span>
+            <b class="badge-meta-val" style="font-family: var(--font-mono); color: var(--emerald-800);">{{ profile.employee_id if profile else 'EMP-2026-0001' }}</b>
+          </div>
+          <div>
+            <span class="badge-meta-lbl">GENDER / AGE</span>
+            <b class="badge-meta-val">{{ (profile.gender or 'Female')|title }} · {{ profile.age or 26 }} yrs</b>
+          </div>
+          <div style="grid-column: span 2;">
+            <span class="badge-meta-lbl">ALLOTTED INDUSTRIAL FACILITY</span>
+            <b class="badge-meta-val">{{ (assigned_site.name if assigned_site else (active.site_name if active else 'Amba Shakti Udyog Ltd')) }}</b>
+          </div>
+        </div>
+
+        <!-- Verification QR Code & Chip Graphic -->
+        <div class="badge-footer-row">
+          <div class="chip-graphic">
+            <span class="chip-gold"></span>
+            <span style="font-size: 9px; font-weight: 800; color: var(--slate-600); letter-spacing: 0.5px;">SECURE NFC / RFID</span>
+          </div>
+          <img class="badge-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=CHAUHAN-VERIFIED-{{ profile.employee_id if profile else 'EMP-001' }}" alt="Verification QR Code">
+        </div>
+      </div>
+    </div>
+
+    <div class="badge-actions">
+      <button type="button" class="btn secondary btn-sm" onclick="window.print()">🖨️ Print Badge</button>
+      <button type="button" class="btn primary btn-sm" id="btn-done-id-badge">Done ✓</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Emergency SOS Dispatch Alert Modal -->
+<dialog class="sos-modal" id="sos-modal" aria-labelledby="sos-title">
+  <div class="sos-modal-inner">
+    <div class="sos-header">
+      <span class="sos-icon-pulse">🚨</span>
+      <h2 id="sos-title" style="color: #fff; margin: 4px 0;">Urgent Emergency SOS Dispatched!</h2>
+      <p style="color: #fecdd3; font-size: 13px; margin: 0;">Supervisor alerted with your live GPS coordinates.</p>
+    </div>
+
+    <div class="sos-content" style="padding: 18px 20px;">
+      <div class="sos-status-box" style="background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px;">
+        <b style="color: #9f1239; font-size: 13px; display: block;">Perimeter Coordinates Broadcast:</b>
+        <span id="sos-coords-text" style="font-family: var(--font-mono); font-size: 12px; color: #be123c;">Acquiring precise satellite coordinates…</span>
+      </div>
+
+      <div style="display: grid; gap: 10px;">
+        <a id="sos-whatsapp-link" href="#" target="_blank" rel="noopener" class="btn primary" style="background: #25D366; border: none; font-weight: 800; text-decoration: none; justify-content: center; min-height: 46px;">
+          <span>💬 Send Live WhatsApp SOS to Supervisor</span>
+        </a>
+        <a href="tel:112" class="btn secondary" style="border-color: #f43f5e; color: #e11d48; justify-content: center; min-height: 44px; text-decoration: none;">
+          <span>📞 Call National Emergency Dispatch (112)</span>
+        </a>
+        <button type="button" class="btn secondary" id="sos-dismiss-btn" style="justify-content: center;">
+          Acknowledge & Dismiss Alert
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Shift Completion Timesheet Receipt Modal -->
+<dialog class="shift-summary-dialog" id="shift-summary-dialog" aria-labelledby="summary-title">
+  <div class="summary-inner">
+    <div class="summary-header">
+      <span class="summary-icon">🏁</span>
+      <div>
+        <div class="eyebrow" style="color: var(--emerald-600);">OFFICIAL SHIFT RECORD</div>
+        <h2 id="summary-title" style="margin: 2px 0;">Shift Successfully Completed</h2>
+      </div>
+    </div>
+
+    <p class="muted" style="font-size: 12.5px; margin-bottom: 14px;">Check-out timestamp and net duration verified with biometric facial match.</p>
+
+    <div class="receipt-card">
+      <div class="receipt-row">
+        <span>Employee Personnel:</span>
+        <b>{{ g.user.name }}</b>
+      </div>
+      <div class="receipt-row">
+        <span>Workplace Facility:</span>
+        <b id="receipt-site-name">{{ (active.site_name if active else (assigned_site.name if assigned_site else 'Industrial Site')) }}</b>
+      </div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-row">
+        <span>Shift Arrival (Check In):</span>
+        <span id="receipt-checkin-time" style="font-family: var(--font-mono);">--</span>
+      </div>
+      <div class="receipt-row">
+        <span>Shift Departure (Check Out):</span>
+        <span id="receipt-checkout-time" style="font-family: var(--font-mono);">--</span>
+      </div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-row highlight">
+        <span>Total Net Working Time:</span>
+        <b id="receipt-net-duration" style="font-size: 16px; color: var(--emerald-700);">--</b>
+      </div>
+      <div class="receipt-row" id="receipt-ot-row" style="display: none;">
+        <span>Overtime Logged:</span>
+        <b id="receipt-ot-hours" style="color: var(--indigo-600);">--</b>
+      </div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-row" style="font-size: 11.5px; color: var(--slate-500);">
+        <span>Security Verification:</span>
+        <span style="color: var(--emerald-700); font-weight: 700;">✓ Biometric Face Match Verified</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end;">
+      <button type="button" class="btn secondary" onclick="window.print()">🖨️ Print Receipt</button>
+      <button type="button" class="btn primary" id="btn-summary-done">Done ✓</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  window.FG = {
+    active: {{ 'true' if active else 'false' }},
+    siteId: {{ active["site_id"] if active else (assigned_site["id"] if assigned_site else 'null') }},
+    hasBiometrics: {{ 'true' if has_biometrics else 'false' }},
+    faceEnrolled: {{ 'true' if face_enrolled else 'false' }},
+    workerName: {{ (g.user["name"] or 'Worker')|tojson }},
+    employeeId: {{ (emp_code or 'EMP-2026-0001')|tojson }},
+    siteName: {{ (cur_site_name or 'Amba Shakti Udyog Ltd')|tojson }},
+    activeStart: {{ (active_start_time or '')|tojson }}
+  };
+</script>
+{% endblock %}
